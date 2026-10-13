@@ -5,7 +5,7 @@ import os
 import re
 import sys
 
-VALID_MOODS = {"hype", "suspense", "emotional", "epic", "chill"}
+VALID_MOODS = {"hype", "suspense", "emotional", "epic", "chill", "sleep"}
 VALID_DELIVERY = {"normal", "punch", "reveal", "aside", "slow"}
 VALID_FX = {"none", "zoom", "shake", "flash"}
 VALID_THUMB_DEVICES = {"circle", "question", "blur", "split"}
@@ -546,7 +546,8 @@ def main():
                     break
 
     # One-line summary first
-    rate = 2.7 if fmt == "short" else 3.35      # long: speed 1.18 with tighter pauses, measured ~200 words a minute (2026-10-09-L: 2217 words, 11:03)
+    rate = (channel_cfg.get("style", {}).get(fmt, {}).get("words_per_second")
+            or (2.7 if fmt == "short" else 3.35))      # long: speed 1.18 with tighter pauses, measured ~200 words a minute (2026-10-09-L: 2217 words, 11:03)
     est_s = round(total_words / rate) if rate > 0 else 0
     print(f"{script_id} {fmt} {n_lines} lines, {total_words} words ~{est_s} s")
 

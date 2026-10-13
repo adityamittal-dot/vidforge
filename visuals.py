@@ -1,33 +1,58 @@
-"""Real anime visuals: screenshots and manga panels from the series' fandom wiki (MediaWiki API),
-with an AI image (images.py) only as the last resort.
+"""Real historical visuals: paintings, photographs, maps and artefacts from the Wikipedia articles a script is about,
+plus a Wikimedia Commons file search per line (MediaWiki API), with an AI image (images.py) only as the last resort.
+Only freely licensed files are used (public domain, CC0, CC BY, CC BY-SA); every file shown is recorded in CREDITS
+so the pipeline can publish per-image attribution.
 
-The writer uses the CLI to pick exact files:
-  python visuals.py search onepiece.fandom.com "Zoro Mihawk"
-  python visuals.py check onepiece.fandom.com "File:Zoro Fights Mihawk.png"
+The writer can check files with the CLI:
+  python visuals.py search en.wikipedia.org "Piri Reis map"
+  python visuals.py check en.wikipedia.org "File:Piri reis world map 01.jpg"
 """
-import argparse, io, os, re, time
+import argparse, io, json, os, re, time
 import requests
 from PIL import Image
 
 
 UA = {"User-Agent": "vidforge/1.0 (+https://github.com/adityamittal-dot/vidforge)"}
-BAD = re.compile(r"logo|icon|merch|bloks|figure|diorama|toy|card|sticker|funko|statue|dub\b|volume cover|poster|"
-                 r"cosplay|live action|game|\.gif$|\.svg$|"
-                 # video games, figure lines and promo renders that the wiki keeps next to real screenshots
-                 r"burning blood|look up|dxf|dxglc|grandista|banpresto|figuarts|ichiban|pirate warriors|bounty rush|"
-                 r"treasure cruise|thousand storm|unlimited world|world seeker|ultimate ninja|ninja storm|blazing|"
-                 r"cursed clash|phantom parade|-share|\bplush|\bpvc\b|keychain|t-shirt|\bshirt\b|hungry days|"
-                 r"unlimited adventure|unlimited cruise|grand adventure|gear spirit|grand battle|pirate's carnival|"
-                 r"kaizoku musou|memorial museum|\bcollab|onepi no mi|collection|pop!|& tee|\btee\b|"
-                 r"merchandise|\bmug\b|\bcake\b|\bcafe\b|restaurant|\bstore\b|\bshop\b|\bpromo", re.I)
+# Wikipedia/Commons clutter: icons, flags, locator maps, charts, diagrams, scans of text, modern tourist snaps
+BAD = re.compile(r"logo|icon|\bflag of\b|coat of arms|locator|location map|\borthographic\b|relief map|"
+                 r"\bchart\b|\bgraph\b|diagram|\btimeline\b|signature|\bstub\b|\bbanner\b|button|commons-|wiki|"
+                 r"disambig|symbol|pictogram|\bseal of\b|qr code|screenshot|selfie|\.gif$|\.svg$|\.tiff?$|\.pdf$|"
+                 r"\.djvu$", re.I)
 EXTS = (".png", ".jpg", ".jpeg", ".webp")
-# TODO: restyle the AI-fallback prompt for the new niche.
-ANIME_STYLE = ("anime key visual, cel shaded, dramatic lighting, detailed background, cinematic composition, "
-               "no text, no watermark")
+# Licences that allow reuse in a monetised video with attribution; anything else (NC, ND, fair use) is skipped.
+FREE = re.compile(r"public domain|^pd|cc0|cc[- ]by(-sa)?[- ]\d|cc[- ]by(-sa)?$|gfdl|no restrictions|attribution", re.I)
+NONFREE = re.compile(r"\bnc\b|non-?commercial|\bnd\b|no ?deriv|fair use|non-free|copyrighted", re.I)
+with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "channel.json"), encoding="utf-8") as _f:
+    _CH = json.load(_f)
+# AI-fallback picture style (channel.json "image_style")
+ANIME_STYLE = _CH.get("image_style", "detailed historical illustration, no text, no watermark")
+EXTMETA = "LicenseShortName|Artist|Credit|ObjectName"
+CREDITS = {}   # {file title: {"artist", "license", "url"}} for every file a video showed
+
+
+def _plain(html):
+    return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", "", str(html or ""))).strip()[:120]
+
+
+def credit_of(t, i):
+    m = i.get("extmetadata") or {}
+    return {"artist": _plain(m.get("Artist", {}).get("value")) or "unknown",
+            "license": _plain(m.get("LicenseShortName", {}).get("value")) or "see file page",
+            "url": i.get("descriptionurl", "")}
+
+
+def _record(t, i):
+    CREDITS[t] = credit_of(t, i)
+
+
+def _search_host(wiki):
+    """Wikipedia articles hold few pictures each; the file search runs on Wikimedia Commons (millions of files)."""
+    return "commons.wikimedia.org" if wiki.endswith("wikipedia.org") else wiki
 
 
 def _api(wiki, **params):
-    url = f"https://{wiki.split('://')[-1].strip('/')}/api.php"
+    host = wiki.split('://')[-1].strip('/')
+    url = f"https://{host}/w/api.php" if host.endswith(("wikipedia.org", "wikimedia.org")) else f"https://{host}/api.php"
     for attempt in range(3):
         try:
             r = requests.get(url, params={"format": "json", **params}, headers=UA, timeout=60)
@@ -47,15 +72,22 @@ def _title(t):
 
 def info(wiki, titles):
     """{title: {"url", "width", "height"}} for up to 30 file titles."""
-    pages = _api(wiki, action="query", prop="imageinfo", iiprop="url|size",
-                 titles="|".join(titles[:30])).get("query", {}).get("pages", {})
+    pages = _api(wiki, action="query", prop="imageinfo", iiprop="url|size|extmetadata", iiextmetadatafilter=EXTMETA,
+                 iiurlwidth=2400, titles="|".join(titles[:30])).get("query", {}).get("pages", {})
     return {p["title"]: p["imageinfo"][0] for p in pages.values() if p.get("imageinfo")}
 
 
 def search(wiki, words, limit=30):
-    hits = _api(wiki, action="query", list="search", srnamespace=6, srsearch=words,
-                srlimit=min(limit, 50)).get("query", {}).get("search", [])
-    return [h["title"] for h in hits]
+    """File titles for `words`, best first. Commons search needs every word to match, so a long query that finds
+    nothing is retried with its first 3, then first 2 words ("Roman legionary winter camp" -> "Roman legionary")."""
+    ws, out = words.split(), []
+    for n in [len(ws)] + [k for k in (3, 2) if k < len(ws)]:
+        hits = _api(_search_host(wiki), action="query", list="search", srnamespace=6, srsearch=" ".join(ws[:n]),
+                    srlimit=min(limit, 50)).get("query", {}).get("search", [])
+        out += [h["title"] for h in hits if h["title"] not in out and h["title"].lower().endswith(EXTS)]
+        if len(out) >= 10:
+            break
+    return out[:limit]
 
 
 # Violent/graphic frames get videos ad-limited (2026-10-09-L used the bloody Baratie chest slash): never use files
@@ -66,10 +98,25 @@ GORE = re.compile(r"blood|bleed|wound|injur|corpse|dead\b|death|dies\b|died|dyin
 MERCH = re.compile(r"^(File:|Image:)?[^ ]+-[^ ]+\.\w+$")    # "DXGLM9-Zoro.png", "POPSailingAgain-Zoro.png": product shots
 
 
+def free_licence(i):
+    """True for files whose licence allows reuse with attribution (Commons/Wikipedia extmetadata). Wikis without
+    licence metadata (Fandom) pass."""
+    m = i.get("extmetadata")
+    if not m:
+        return True
+    lic = _plain(m.get("LicenseShortName", {}).get("value"))
+    return bool(lic) and bool(FREE.search(lic)) and not NONFREE.search(lic)
+
+
 def acceptable(title, i):
     return (title.lower().endswith(EXTS) and not BAD.search(title) and not GORE.search(title)
-            and not MERCH.match(title)
-            and i.get("width", 0) >= 400 and i.get("height", 0) >= 400)
+            and free_licence(i)
+            and i.get("width", 0) >= 600 and i.get("height", 0) >= 400)
+
+
+def _url(i):
+    """A <=2400 px rendition when the API offers one (Commons originals can be 100+ MB scans)."""
+    return i.get("thumburl") or i["url"]
 
 
 def _download(url, out):
@@ -97,7 +144,7 @@ def page_images(wiki, page):
     out, cont = {}, {}
     for _ in range(4):
         r = _api(wiki, action="query", titles=page, generator="images", gimlimit=200, prop="imageinfo",
-                 iiprop="url|size", redirects=1, **cont)
+                 iiprop="url|size|extmetadata", iiextmetadatafilter=EXTMETA, iiurlwidth=2400, redirects=1, **cont)
         for p in r.get("query", {}).get("pages", {}).values():
             if p.get("imageinfo") and acceptable(p["title"], p["imageinfo"][0]):
                 out[p["title"]] = p["imageinfo"][0]
@@ -121,9 +168,9 @@ def script_pages(script):
 
 STOP = set("""a an and are as at be but by for from had has have he her his i if in into is it its just me my no not
 of on or our over she so than that the their them then there these they this to up was we were what when which who why
-will with you your file png jpg jpeg webp anime manga image picture vs""".split())
-DULL = re.compile(r"infobox|portrait|concept art|color scheme|colour scheme|outfit|jolly roger|symbol|sbs|"
-                  r"\bchapter \d+\.|\bepisode \d+\.|wanted poster|eyecatcher|\bmap\b|signature|avatar|title card", re.I)
+will with you your file png jpg jpeg webp image picture photo vs""".split())
+DULL = re.compile(r"infobox|\bpage \d+|manuscript page|\bfolio\b|\btext\b|inscription detail|"
+                  r"museum (front|entrance|exterior)|\bsign\b|plaque|signature|avatar", re.I)
 
 
 def _tokens(s):
@@ -155,7 +202,7 @@ def rank(wiki, shot, text, pool):
         s = 3 * len(want & name) + len(said & name) + hits.get(t, 0) + (1 if t in pool else 0)
         if DULL.search(t):
             s -= 2
-        if "-" in t or len(name) <= 1:                   # "Becoming a Hero - Zoro": songs/products; "Sukuna.png": a bare render
+        if len(name) <= 1:                               # "Rome.jpg": a bare name says nothing about the line
             s -= 1.5
         if subject and not subject & name:               # search starts with its subject: "Zoro ..." must show Zoro,
             s -= 3                                       # not "Douglas Bullet Using Supreme King Haki"
@@ -185,7 +232,8 @@ def pick(shot, text, wiki, pool, used, n, out_paths):
     if wiki and shot.get("image"):
         t = _title(shot["image"])
         i = info(wiki, [t]).get(t)
-        if i and i.get("width", 0) >= 300 and _download(i["url"], out_paths[0]):
+        if i and i.get("width", 0) >= 300 and _download(_url(i), out_paths[0]):
+            _record(t, i)
             used[t] = used.get(t, 0) + 1
             got.append(out_paths[0])
             mine.add(t)
@@ -203,7 +251,8 @@ def pick(shot, text, wiki, pool, used, n, out_paths):
             continue
         if got and s < max(3, best * 0.35):
             break
-        if _download(i["url"], out_paths[len(got)]):
+        if _download(_url(i), out_paths[len(got)]):
+            _record(t, i)
             used[t] = used.get(t, 0) + 1
             got.append(out_paths[len(got)])
             mine.add(t)
@@ -221,18 +270,19 @@ def pick_hook(shot, text, wiki, pool, used, out_path, tries=4):
     best, scored = ranked[0][0], []
     for s, t, i, _ in [r for r in ranked if r[0] >= ranked[0][0] * 0.6][:tries]:
         tmp = f"{out_path}.cand{len(scored)}.jpg"
-        if _download(i["url"], tmp):
+        if _download(_url(i), tmp):
             try:
                 with Image.open(tmp) as im:
-                    scored.append((framing.hook_score(im) * (0.8 + 0.2 * s / best), t, tmp))
+                    scored.append((framing.hook_score(im) * (0.8 + 0.2 * s / best), t, tmp, i))
             except Exception:
                 pass
     if not scored:
         return None
     scored.sort(key=lambda x: -x[0])
-    _, t, tmp = scored[0]
+    _, t, tmp, i = scored[0]
     os.replace(tmp, out_path)
-    for _, _, other in scored[1:]:
+    _record(t, i)
+    for _, _, other, _ in scored[1:]:
         try:
             os.remove(other)
         except OSError:
@@ -254,7 +304,7 @@ if __name__ == "__main__":
         for t in good[:a.n]:
             print(f"{t}  {infos[t]['width']}x{infos[t]['height']}")
         if not good:
-            print("no usable images; try other words (character name + event, e.g. 'Luffy Gear 5')")
+            print("no usable images; try other words (place/person + object, e.g. 'Pompeii fresco')")
     else:
         t = _title(a.title)
         i = info(a.wiki, [t]).get(t)

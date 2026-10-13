@@ -2,6 +2,7 @@
 music bed, and full video rendering for vertical Shorts and 16:9 long videos."""
 import glob
 import math
+import json
 import os
 import random
 import subprocess
@@ -14,6 +15,9 @@ H = {"short": 1920, "long": 1080}
 REPO_DIR = os.path.abspath(os.path.dirname(__file__))
 FONTS_DIR = os.path.join(REPO_DIR, "fonts")
 FONT = os.path.join(FONTS_DIR, "Anton-Regular.ttf")
+# 3 h of slow pans on stills: crf 23 keeps the upload around 2-4 GB with no visible loss
+with open(os.path.join(REPO_DIR, "channel.json"), encoding="utf-8") as _f:
+    LONG_CRF = str(json.load(_f).get("style", {}).get("long", {}).get("crf", 20))
 
 VOICE_FX = (
     "highpass=f=80,"
@@ -151,7 +155,7 @@ def beat_clip(img, frames, out, k, fx="none", tight=False, fmt="short", card=Non
     vf = (f"zoompan=z='{z}':x='{x}':y='{y}':d={n}:s={vw}x{vh}:fps={FPS},"
           f"eq=contrast=1.05:saturation=1.10{post},format=yuv420p")
     run(["ffmpeg", "-y", "-i", canvas, "-vf", vf, "-frames:v", str(n), "-c:v", "libx264", "-preset", "veryfast",
-         "-crf", "18" if fmt == "short" else "20", "-pix_fmt", "yuv420p", "-r", str(FPS), "-an", out])
+         "-crf", "18" if fmt == "short" else LONG_CRF, "-pix_fmt", "yuv420p", "-r", str(FPS), "-an", out])
     try:
         os.remove(canvas)
     except OSError:

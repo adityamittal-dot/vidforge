@@ -23,7 +23,10 @@ import video
 import visuals
 
 with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "channel.json"), encoding="utf-8") as _f:
-    CHANNEL_WIKI = json.load(_f).get("wiki", "")  # default MediaWiki host for scripts without "wiki"
+    _CHANNEL = json.load(_f)
+CHANNEL_WIKI = _CHANNEL.get("wiki", "")          # default MediaWiki host for scripts without "wiki"
+STYLE = _CHANNEL.get("style", {})                # per-format pacing; a calm long style drops captions, cards, sfx, fx
+REPO_URL = "https://github.com/adityamittal-dot/vidforge"
 
 
 def notify(msg: str, click: str = None) -> None:
@@ -102,6 +105,29 @@ def append_studio_todo(line: str, data_dir: str = "data") -> None:
 BEAT = {"short": 1.0, "long": 1.7}
 MAX_BEATS = {"short": 4, "long": 3}
 PAUSE_SCALE = {"short": 1.0, "long": 1.0}   # line ends are trimmed now (tts.py), so long needs no extra squeeze
+for _fmt, _st in STYLE.items():             # channel.json "style" overrides (sleep videos: ~10 s per picture, long pauses)
+    BEAT[_fmt] = _st.get("beat", BEAT.get(_fmt, 1.7))
+    MAX_BEATS[_fmt] = _st.get("max_beats", MAX_BEATS.get(_fmt, 3))
+    PAUSE_SCALE[_fmt] = _st.get("pause_scale", PAUSE_SCALE.get(_fmt, 1.0))
+
+
+def style(fmt, key, default=True):
+    return STYLE.get(fmt, {}).get(key, default)
+
+
+def write_credits(script, out_dir="credits"):
+    """credits/<id>.md: author, licence and source page of every image the video showed (CC BY / BY-SA require
+    attribution; a few hundred files don't fit a 5000-character description, so the description links here)."""
+    if not visuals.CREDITS:
+        return None
+    os.makedirs(out_dir, exist_ok=True)
+    path = os.path.join(out_dir, f"{script['id']}.md")
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(f"# Image credits: {script.get('title', script['id'])}\n\n"
+                "Every image below is from Wikimedia Commons / Wikipedia and keeps its own licence.\n\n")
+        for t, c in sorted(visuals.CREDITS.items()):
+            f.write(f"- [{t[5:]}]({c['url']}) by {c['artist']}, {c['license']}\n")
+    return f"{REPO_URL}/blob/main/{path}"
 
 
 MISSING_NAMES = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "pronounce_missing.md")
@@ -199,8 +225,10 @@ def beat_clips(script, fmt, lines, segs, line_starts, line_words_rel, work, seed
             clip = os.path.join(work, "clips", f"{i:04d}_{b}.mp4")
             if not os.path.exists(clip):
                 title = ((chapter_at[i], b == 0, b == len(cuts) - 2) if fmt == "long" and i in chapter_at else None)
-                jobs.append((imgs[b], f1 - f0, clip, k, line.get("fx", "none") if b == 0 else "none", tight[b], fmt,
-                             line.get("card") if b == 0 and fmt == "long" and i not in chapter_at else None, title,
+                fx = line.get("fx", "none") if b == 0 and not style(fmt, "calm", False) else "none"
+                card = (line.get("card") if b == 0 and fmt == "long" and i not in chapter_at and style(fmt, "cards")
+                        else None)
+                jobs.append((imgs[b], f1 - f0, clip, k, fx, tight[b], fmt, card, title,
                              (ass, f0 / video.FPS) if ass else None))
             clips.append(clip)
             k += 1
@@ -309,7 +337,7 @@ def run(script_path: str, upload_flag: bool = False, no_move_flag: bool = False)
     # 3. Visuals & video clips
     print(f"Step 3: Fetching visuals and generating clips ({fmt})...", flush=True)
     long_ass = None
-    if fmt == "long":                                  # burned into each beat clip (the joined video is stream-copied)
+    if fmt == "long" and style(fmt, "captions"):      # burned into each beat clip (the joined video is stream-copied)
         long_ass = video.captions_ass(words, os.path.join(work, "captions_long.ass"), fmt)
     clips, pool = beat_clips(script, fmt, lines, segs, line_starts, line_words_rel, work, seed, ass=long_ass)
     last_img = next((p for p in sorted(glob.glob(os.path.join(work, "img", "*.jpg")))), None)
@@ -327,13 +355,15 @@ def run(script_path: str, upload_flag: bool = False, no_move_flag: bool = False)
 
     for i, line in enumerate(lines):
         fx = line.get("fx", "none")
+        if not style(fmt, "sfx"):
+            break
         if fmt == "short" and fx != "none":
             sfx_events.append((line_starts[i], get_sfx("whoosh"), 0.35))
         if fx in ("shake", "flash"):
             sfx_events.append((line_starts[i], get_sfx("hit"), 0.5))
 
     first_reveal_idx = next((i for i, line in enumerate(lines) if line.get("delivery") == "reveal"), None)
-    if first_reveal_idx is not None:
+    if first_reveal_idx is not None and style(fmt, "sfx"):
         riser_t = max(0.0, line_starts[first_reveal_idx] - 1.2)
         sfx_events.append((riser_t, get_sfx("riser"), 0.25))
 
@@ -443,7 +473,9 @@ def run(script_path: str, upload_flag: bool = False, no_move_flag: bool = False)
     # Credits: rights holders of the series, the wiki the stills came from, the music (CC BY requires it, and the
     # composer's Content ID releases videos that credit him), and a plain fan-commentary note.
     series_cfg = next((s for s in channel_cfg.get("series", []) if s.get("id") == script.get("series")), {})
-    credit_lines = [series_cfg.get("credit", ""), music_lib.credit(music_tracks), channel_cfg.get("fair_use_note", "")]
+    credits_url = write_credits(script)
+    credit_lines = [series_cfg.get("credit", ""), f"Image credits: {credits_url}" if credits_url else "",
+                    music_lib.credit(music_tracks), channel_cfg.get("fair_use_note", "")]
     credits = "\n".join(c for c in credit_lines if c)
     if credits:
         desc_blocks.append(credits)

@@ -1,30 +1,108 @@
 {
-  "name": "vidforge",
-  "niche": "TODO: describe the niche",
+  "name": "Late Night History TV",
+  "niche": "calm long-form history to fall asleep to: lost civilizations, ancient mysteries, daily life in past eras, dynasties and legends, told gently and accurately",
   "series": [
     {
-      "id": "main",
-      "name": "TODO Main Series",
-      "playlist": "TODO Playlist",
+      "id": "mysteries",
+      "name": "Lost Worlds & Ancient Mysteries",
+      "playlist": "Lost Worlds & Ancient Mysteries | History for Sleep",
       "hashtags": [
-        "#todo"
+        "#historyforsleep",
+        "#ancientmysteries",
+        "#lostcivilizations"
       ],
-      "release": "TODO: release cadence / news hooks for this topic",
+      "release": "Evergreen. Benchmarks: Midnight History's Antarctica/Atlantis/Tartaria outliers (24k-66k), Uncharted Mysteries. Run as numbered series (Part 1, 2, 3).",
       "sources": [
-        "https://TODO.fandom.com/wiki/Main_Page"
+        "https://en.wikipedia.org/wiki/Atlantis",
+        "https://en.wikipedia.org/wiki/Doggerland",
+        "https://en.wikipedia.org/wiki/Piri_Reis_map"
       ],
       "search_terms": [
-        "TODO search term"
+        "atlantis history for sleep",
+        "ancient mysteries for sleep",
+        "lost civilization documentary",
+        "antarctica mystery",
+        "sunken lands"
       ],
-      "credit": "TODO: rights holders + image source credit"
+      "credit": "Images: Wikimedia Commons / Wikipedia (public domain and Creative Commons; full per-image credits linked below)."
+    },
+    {
+      "id": "life",
+      "name": "Life in the Past",
+      "playlist": "What Life Was Really Like | History for Sleep",
+      "hashtags": [
+        "#historyforsleep",
+        "#dailylife",
+        "#medievalhistory"
+      ],
+      "release": "Evergreen. Benchmarks: Historian Sleepy (1700s London 115k), Sleepy History Channel (Stone Age 183k), Sleepless Historian survival topics.",
+      "sources": [
+        "https://en.wikipedia.org/wiki/Daily_life_in_ancient_Rome",
+        "https://en.wikipedia.org/wiki/Medieval_cuisine"
+      ],
+      "search_terms": [
+        "what life was like in",
+        "how did people survive winter",
+        "medieval peasant life for sleep",
+        "roman daily life"
+      ],
+      "credit": "Images: Wikimedia Commons / Wikipedia (public domain and Creative Commons; full per-image credits linked below)."
+    },
+    {
+      "id": "empires",
+      "name": "Empires & Dynasties",
+      "playlist": "The Entire Story | History for Sleep",
+      "hashtags": [
+        "#historyforsleep",
+        "#empire",
+        "#history"
+      ],
+      "release": "Evergreen. Benchmarks: History at Night (Maya collapse 1.2M, Venice 964k), Bedtime & Historian (East India Company 335k).",
+      "sources": [
+        "https://en.wikipedia.org/wiki/Merovingian_dynasty",
+        "https://en.wikipedia.org/wiki/Republic_of_Venice"
+      ],
+      "search_terms": [
+        "rise and fall of",
+        "entire history of",
+        "merovingians",
+        "knights templar history",
+        "byzantine empire for sleep"
+      ],
+      "credit": "Images: Wikimedia Commons / Wikipedia (public domain and Creative Commons; full per-image credits linked below)."
+    },
+    {
+      "id": "myths",
+      "name": "Myths & Legends",
+      "playlist": "Myths & Legends | History for Sleep",
+      "hashtags": [
+        "#mythologyforsleep",
+        "#greekmythology",
+        "#historyforsleep"
+      ],
+      "release": "Evergreen. Benchmarks: Dreamoria's ENTIRE Story of Greek Mythology (6.1M), Bedtime & Historian's Odyssey (348k).",
+      "sources": [
+        "https://en.wikipedia.org/wiki/Greek_mythology",
+        "https://en.wikipedia.org/wiki/Norse_mythology"
+      ],
+      "search_terms": [
+        "greek mythology for sleep",
+        "norse mythology story",
+        "odyssey full story",
+        "egyptian mythology"
+      ],
+      "credit": "Images: Wikimedia Commons / Wikipedia (public domain and Creative Commons; full per-image credits linked below)."
     }
   ],
   "series_weights": {
-    "main": 1
+    "mysteries": 3,
+    "life": 3,
+    "empires": 2,
+    "myths": 2
   },
   "long_schedule": [
     {
-      "from": "2026-10-09",
+      "from": "2026-10-16",
       "days": [
         "Mon",
         "Tue",
@@ -34,25 +112,12 @@
         "Sat",
         "Sun"
       ],
-      "per_day": 2
-    },
-    {
-      "from": "2026-11-01",
-      "days": [
-        "Mon",
-        "Tue",
-        "Wed",
-        "Thu",
-        "Fri",
-        "Sat",
-        "Sun"
-      ],
-      "per_day": 1,
-      "shorts_per_day": 2
+      "per_day": 2,
+      "shorts_per_day": 0
     }
   ],
-  "shorts_per_day": 1,
-  "narrator_voice": "am_michael",
+  "shorts_per_day": 0,
+  "narrator_voice": "bm_george",
   "banned_phrases": [
     "to understand how we get there",
     "remember ",
@@ -65,62 +130,87 @@
     "without further ado",
     "little did",
     "but here's the thing",
-    "fast forward"
+    "fast forward",
+    "smash",
+    "mind-blowing",
+    "you won't believe",
+    "shocking"
   ],
   "formats": {
     "short": {
       "words": [
-        95,
-        165
+        90,
+        150
       ],
       "lines": [
         8,
         22
       ],
-      "note": "35-60 s vertical: one sharp claim or story beat, evidence, payoff, last line loops into the first"
+      "note": "40-60 s vertical: one striking historical mystery or fact, calm but intriguing, last line loops into the first and teases the full video"
     },
     "long": {
       "words": [
-        2450,
-        3000
+        18700,
+        22400
       ],
       "lines": [
-        110,
-        300
+        1300,
+        2600
       ],
-      "note": "12-15 min (the pipeline reads ~200 wpm, so 2450-3000 words): What If story or theory breakdown; payoff teased in 5 s, re-hook every 2-3 min"
+      "note": "2.5-3 h sleep documentary (measured ~125 wpm with gentle pauses: 18,700-22,400 words) in 15-25 chapters; one era/mystery told as a calm, accurate story, steady wonder, no shock cliffhangers"
     }
   },
   "voice_blend": {
-    "am_michael": 0.65,
-    "am_fenrir": 0.35
+    "bm_george": 0.7,
+    "bm_lewis": 0.3
   },
   "speed": {
-    "short": 1.12,
-    "long": 1.18
+    "short": 1.05,
+    "long": 0.9
   },
   "publish": {
     "mode": "schedule",
-    "short_slots_utc": [
-      "14:30",
-      "17:00"
-    ],
+    "short_slots_utc": [],
     "long_slots_utc": [
-      "15:00",
-      "23:00"
+      "01:00",
+      "04:00"
     ],
-    "min_lead_hours": 3
+    "min_lead_hours": 3,
+    "slots_note": "01:00 UTC = 9 pm EDT / 8 pm EST (East Coast bedtime wave, also late night UK); 04:00 UTC = 9 pm PDT / midnight EDT (West Coast). Times are UTC, so local times shift 1 h when US DST ends (Nov 1)."
   },
-  "shorts_per_session": {
-    "m": 3,
-    "a": 2,
-    "b": 2
-  },
-  "fair_use_note": "TODO: fair-use / affiliation note for descriptions",
-  "wiki": "TODO.fandom.com",
+  "fair_use_note": "Narrated historical documentary for relaxation and learning. Images are historical artworks, photographs and maps from Wikimedia Commons; each keeps its own licence (see the credits link). Narration voice is AI-generated.",
+  "wiki": "en.wikipedia.org",
   "rotation": {
-    "main": "main",
-    "long_off": [],
+    "main": "mysteries",
+    "long_cycle": [
+      "mysteries",
+      "life",
+      "empires",
+      "mysteries",
+      "life",
+      "myths"
+    ],
     "short_by_weekday": {}
-  }
+  },
+  "handle": "@tvlatenighthistory",
+  "style": {
+    "short": {
+      "beat": 1.0,
+      "max_beats": 4,
+      "pause_scale": 1.0
+    },
+    "long": {
+      "beat": 10.0,
+      "max_beats": 2,
+      "pause_scale": 5.0,
+      "captions": false,
+      "sfx": false,
+      "cards": false,
+      "calm": true,
+      "words_per_second": 2.08,
+      "music_below_db": 15,
+      "crf": 23
+    }
+  },
+  "image_style": "richly detailed semi-realistic digital oil painting, historical illustration, warm candlelit palette, soft painterly brushwork, atmospheric depth, no text, no watermark"
 }

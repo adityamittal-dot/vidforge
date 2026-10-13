@@ -12,6 +12,7 @@ import os
 import random
 import re
 import subprocess
+import json
 import sys
 
 import numpy as np
@@ -23,7 +24,7 @@ CREDIT = "{title} by Scott Buckley – released under CC-BY 4.0. www.scottbuckle
 TRACKS = [
     ("EyesInTheVoid.mp3", "2025/06/", "Eyes In The Void", ["suspense"]),
     ("Unraveling.mp3", "2026/05/", "Unraveling", ["suspense", "emotional"]),
-    ("Penumbra.mp3", "2025/07/", "Penumbra", ["suspense", "emotional"]),
+    ("Penumbra.mp3", "2025/07/", "Penumbra", ["suspense", "emotional", "sleep"]),
     ("Anabasis_II.mp3", "2026/09/", "Anabasis II", ["suspense", "hype"]),
     ("SongOfTheForge.mp3", "2025/11/", "Song Of The Forge", ["epic"]),
     ("Aphelion.mp3", "2026/04/", "Aphelion", ["epic"]),
@@ -31,16 +32,20 @@ TRACKS = [
     ("Katabasis_II.mp3", "2026/09/", "Katabasis II", ["epic", "hype"]),
     ("BornOfTheSky.mp3", "2025/08/", "Born Of The Sky", ["hype"]),
     ("Convergence.mp3", "2026/04/", "Convergence", ["hype", "emotional"]),
-    ("Wildflowers.mp3", "2025/12/", "Wildflowers", ["emotional"]),
-    ("MemoriesOfStone.mp3", "2026/02/", "Memories Of Stone", ["emotional"]),
-    ("EchoesOfHome.mp3", "2025/05/", "Echoes Of Home", ["chill", "emotional"]),
-    ("Origami.mp3", "2025/10/", "Origami", ["chill"]),
-    ("Phoenix2026.mp3", "2026/03/", "Phoenix", ["chill"]),
+    ("Wildflowers.mp3", "2025/12/", "Wildflowers", ["emotional", "sleep"]),
+    ("MemoriesOfStone.mp3", "2026/02/", "Memories Of Stone", ["emotional", "sleep"]),
+    ("EchoesOfHome.mp3", "2025/05/", "Echoes Of Home", ["chill", "emotional", "sleep"]),
+    ("Origami.mp3", "2025/10/", "Origami", ["chill", "sleep"]),
+    ("Phoenix2026.mp3", "2026/03/", "Phoenix", ["chill", "sleep"]),
 ]
-MOODS = ["hype", "suspense", "emotional", "epic", "chill"]
+MOODS = ["hype", "suspense", "emotional", "epic", "chill", "sleep"]
 REPO_DIR = os.path.abspath(os.path.dirname(__file__))
 LIB = os.path.join(REPO_DIR, "music", "library")
 BED_BELOW_VOICE = {"short": 6.0, "long": 9.0}   # dB under the narration's loudness, before ducking
+with open(os.path.join(REPO_DIR, "channel.json"), encoding="utf-8") as _f:
+    for _fmt, _st in json.load(_f).get("style", {}).items():
+        if "music_below_db" in _st:              # sleep videos: a much quieter bed
+            BED_BELOW_VOICE[_fmt] = _st["music_below_db"]
 
 
 def _library_urls():
@@ -144,7 +149,7 @@ def bed(mood, work, seconds, narration, fmt, seed=0):
     used, inputs, filters, t = [], [], [], 0.0
     need = seconds + 2.0
     xfade = 4.0
-    while t < need and len(used) < 12:
+    while t < need and len(used) < 80:            # 3 h sleep videos cycle the pool
         track = pool[len(used) % len(pool)]
         dur = float(subprocess.check_output(["ffprobe", "-v", "error", "-show_entries", "format=duration",
                                              "-of", "default=nw=1:nk=1", track]).decode().strip())

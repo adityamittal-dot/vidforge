@@ -8,7 +8,7 @@ on:
     branches: ["claude/**"]      # cloud sessions push to their own claude/* branch; merged below (no Claude cost)
     paths: ["scripts/backlog/**", "notes/**"]
   schedule:
-    - cron: "15 */3 * * *"
+    - cron: "15 */2 * * *"
   workflow_dispatch:
     inputs:
       upload: {description: "Upload to YouTube", type: boolean, default: true}
@@ -147,7 +147,7 @@ jobs:
           [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.upload }}" = "false" ] && UP=""
           push() { for i in 1 2 3; do git pull --rebase -q origin main && git push -q origin main && return 0; sleep 5; done; return 1; }
           failed=0
-          for f in $(ls scripts/queue/*.json | sort | head -n 12); do
+          for f in $(ls scripts/queue/*.json | sort | head -n 1); do   # one 2.5-3 h video per run fits the 330 min job; the 2-hourly cron renders the next
             id=$(basename "$f" .json); ok=0
             for attempt in 1 2; do
               export FINAL_ATTEMPT=$([ "$attempt" = 2 ] && echo 1 || echo 0)
@@ -159,7 +159,7 @@ jobs:
             done
             if [ "$ok" = 1 ]; then
               rm -f "scripts/queue/.fails/$id"
-              git add -A scripts; git add data/pronounce_missing.md data/studio_todo.md 2>/dev/null || true; git diff --staged --quiet || git commit -qm "published $id"
+              git add -A scripts; git add -A credits 2>/dev/null || true; git add data/pronounce_missing.md data/studio_todo.md 2>/dev/null || true; git diff --staged --quiet || git commit -qm "published $id"
             else
               failed=1
               # a script that fails on 3 separate runs is parked in scripts/failed/ so it stops blocking the queue
@@ -169,7 +169,7 @@ jobs:
                 mkdir -p scripts/failed; git mv "$f" "scripts/failed/$id.json"; rm -f "scripts/queue/.fails/$id"
                 [ -n "$NTFY_TOPIC" ] && curl -s -d "Parked $id in scripts/failed after 3 failed runs. Move it back to scripts/queue to retry." "ntfy.sh/$NTFY_TOPIC" > /dev/null
               fi
-              git add -A scripts; git add data/pronounce_missing.md data/studio_todo.md 2>/dev/null || true; git diff --staged --quiet || git commit -qm "render failed $id ($n)"
+              git add -A scripts; git add -A credits 2>/dev/null || true; git add data/pronounce_missing.md data/studio_todo.md 2>/dev/null || true; git diff --staged --quiet || git commit -qm "render failed $id ($n)"
               echo "::error::$id failed"
             fi
             push || echo "::error::push failed after $id"
@@ -181,7 +181,7 @@ jobs:
         with:
           name: renders
           path: |
-            output/*/final.mp4
             output/*/thumbnail.jpg
+            output/*/meta.json
           retention-days: 3
           if-no-files-found: ignore

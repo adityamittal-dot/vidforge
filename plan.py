@@ -23,6 +23,7 @@ with open(os.path.join(REPO_DIR, "channel.json"), encoding="utf-8") as _f:
 MAIN_SERIES = _ROTATION.get("main", "main")
 SHORT_SERIES_BY_WEEKDAY = _ROTATION.get("short_by_weekday", {})
 LONG_OFF_SERIES = _ROTATION.get("long_off", [])
+LONG_CYCLE = _ROTATION.get("long_cycle", [])       # if set, long videos simply cycle through these series
 
 
 def load_channel(repo_dir=REPO_DIR):
@@ -99,8 +100,12 @@ def day_items(schedule, shorts_per_day, day, long_index):
     shorts_per_day = shorts_for(schedule, shorts_per_day, day)
     for k in range(1, n_long + 1):
         long_index += 1
-        series = (LONG_OFF_SERIES[(long_index // 4 - 1) % len(LONG_OFF_SERIES)]
-                  if LONG_OFF_SERIES and long_index % 4 == 0 else MAIN_SERIES)
+        if LONG_CYCLE:
+            series = LONG_CYCLE[(long_index - 1) % len(LONG_CYCLE)]
+        elif LONG_OFF_SERIES and long_index % 4 == 0:
+            series = LONG_OFF_SERIES[(long_index // 4 - 1) % len(LONG_OFF_SERIES)]
+        else:
+            series = MAIN_SERIES
         lid = long_id(date_str, k)
         items.append({"id": lid, "format": "long", "series": series, "publish_date": date_str})
         items += [{"id": f"{lid}s{s}", "format": "short", "series": series, "publish_date": date_str}
