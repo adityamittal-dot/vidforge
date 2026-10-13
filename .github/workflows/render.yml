@@ -1,0 +1,187 @@
+name: render-and-publish
+# Renders queued scripts in scripts/queue, uploads as scheduled videos, and moves them to scripts/done/.
+# Releases backlog scripts whose date has arrived into scripts/queue just-in-time.
+# The 3-hourly schedule retries anything left in the queue, releases backlog that has come due, and posts
+# first comments on videos that just went public.
+on:
+  push:
+    branches: ["claude/**"]      # cloud sessions push to their own claude/* branch; merged below (no Claude cost)
+    paths: ["scripts/backlog/**", "notes/**"]
+  schedule:
+    - cron: "15 */3 * * *"
+  workflow_dispatch:
+    inputs:
+      upload: {description: "Upload to YouTube", type: boolean, default: true}
+
+permissions:
+  contents: write
+
+concurrency: {group: render, cancel-in-progress: false}
+
+jobs:
+  render:
+    runs-on: ubuntu-24.04   # pinned: ubuntu-latest moves to 26 on 2026-10-19
+    timeout-minutes: 330
+    env:
+      NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+    steps:
+      - uses: actions/checkout@v7
+        with: {ref: main, fetch-depth: 0}
+
+      - name: Validate scripts
+        id: validate
+        run: |
+          git config user.name "vidforge-bot"; git config user.email "vidforge-bot@users.noreply.github.com"
+          rejected=0
+          # Merge every claude/* branch (cloud writer sessions), then delete it. The validation below still
+          # gates every script, so a bad one goes to scripts/rejected/ instead of publishing.
+          for b in $(git branch -r --list 'origin/claude/*'); do
+            if git merge -q --no-edit "$b" -m "merge ${b#origin/}"; then
+              git push -q origin main && git push -q origin --delete "${b#origin/}" || true
+            else git merge --abort; echo "::warning::could not merge $b automatically (conflict) - merge it by hand"; fi
+          done
+          for f in scripts/queue/*.json scripts/backlog/*.json; do
+            [ -f "$f" ] || continue
+            if ! out=$(python3 validate_script.py "$f" 2>&1); then
+              id=$(basename "$f" .json); mkdir -p scripts/rejected
+              git mv "$f" "scripts/rejected/$id.json"; printf '%s\n' "$out" > "scripts/rejected/$id.log"; git add "scripts/rejected/$id.log"
+              git commit -qm "rejected $id (failed validation)"
+              echo "::warning::rejected $id: $out"
+              [ -n "$NTFY_TOPIC" ] && curl -s -d "vidforge rejected $id (failed validation)" "ntfy.sh/$NTFY_TOPIC" > /dev/null || true
+              rejected=1
+            fi
+          done
+          if [ "$rejected" = 1 ]; then
+            for i in 1 2 3; do git pull --rebase -q origin main && git push -q origin main && break; sleep 5; done
+          fi
+
+      - name: Release backlog
+        id: release
+        run: |
+          # Backlog scripts (scripts/backlog/<id>.json, id starts with the intended publish date) move into
+          # scripts/queue once that date has arrived, so render only ever processes the queue: it renders
+          # just-in-time, with whatever code is on main that day, instead of days ahead of the publish date.
+          git config user.name "vidforge-bot"; git config user.email "vidforge-bot@users.noreply.github.com"
+          mkdir -p scripts/queue
+          cutoff=$(date -u -d "+1 day" +%F)
+          released=""
+          for f in scripts/backlog/*.json; do
+            [ -e "$f" ] || continue
+            id=$(basename "$f" .json)
+            date_prefix=${id:0:10}
+            if [[ "$date_prefix" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]] && [[ "$date_prefix" < "$cutoff" || "$date_prefix" == "$cutoff" ]]; then
+              git mv "$f" "scripts/queue/$id.json"
+              released="$released $id"
+            fi
+          done
+          if [ -n "$released" ]; then
+            git commit -qm "release$released"
+            for i in 1 2 3; do git pull --rebase -q origin main && git push -q origin main && break; sleep 5; done
+          fi
+          n=$(ls scripts/queue/*.json 2>/dev/null | wc -l)
+          echo "n=$n" >> "$GITHUB_OUTPUT"
+          if [ "$n" = 0 ] && [ "$GITHUB_EVENT_NAME" = push ]; then
+            msg="Script push on $GITHUB_REF_NAME but the queue on main is empty (nothing due out of the backlog yet) - nothing rendered."
+            echo "::warning::$msg"
+            [ -n "$NTFY_TOPIC" ] && curl -s -d "$msg" "ntfy.sh/$NTFY_TOPIC" > /dev/null || true
+          fi
+
+      - uses: actions/setup-python@v7
+        with: {python-version: "3.12", cache: pip}
+
+      - name: YouTube credentials
+        env:
+          S: ${{ secrets.YT_CLIENT_SECRET }}
+          T: ${{ secrets.YT_TOKEN }}
+          RS: ${{ secrets.YT_RESERVE_CLIENT_SECRET }}
+          RT: ${{ secrets.YT_RESERVE_TOKEN }}
+        run: |
+          [ -n "$S" ] && printf '%s' "$S" > yt_client_secret.json
+          [ -n "$T" ] && printf '%s' "$T" > yt_token.json
+          [ -n "$RS" ] && printf '%s' "$RS" > yt_reserve_client_secret.json
+          [ -n "$RT" ] && printf '%s' "$RT" > yt_reserve_token.json
+          true
+
+      - name: Post queued first comments
+        run: |
+          pip install -q google-api-python-client google-auth-oauthlib
+          python upload.py comments || echo "::warning::comment step failed"
+          git add scripts/done 2>/dev/null
+          git diff --staged --quiet || { git commit -qm "first comments"; for i in 1 2 3; do git pull --rebase -q origin main && git push -q origin main && break; sleep 5; done; }
+
+      - name: System packages
+        if: steps.release.outputs.n != '0'
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg espeak-ng
+
+      - name: Python packages
+        if: steps.release.outputs.n != '0'
+        run: |
+          pip install -q torch --index-url https://download.pytorch.org/whl/cpu
+          pip install -q -r requirements.txt
+
+      - name: Cache voice model
+        if: steps.release.outputs.n != '0'
+        uses: actions/cache@v6
+        with: {path: ~/.cache/huggingface, key: kokoro-v2}
+
+      - name: Cache music library
+        if: steps.release.outputs.n != '0'
+        uses: actions/cache@v6
+        with: {path: music/library, key: music-library-v1}
+
+      - name: Music library
+        if: steps.release.outputs.n != '0'
+        run: python music.py fetch || echo "::warning::music download failed; videos fall back to the synthesized pad"
+
+      - name: Render and publish
+        if: steps.release.outputs.n != '0'
+        env:
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          POLLINATIONS_TOKEN: ${{ secrets.POLLINATIONS_TOKEN }}
+          KOKORO_VOICE: ${{ vars.KOKORO_VOICE }}
+          PUBLISH_MODE: ${{ vars.PUBLISH_MODE }}
+          SYNTHETIC_DISCLOSURE: ${{ vars.SYNTHETIC_DISCLOSURE }}
+        run: |
+          UP="--upload"
+          [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.upload }}" = "false" ] && UP=""
+          push() { for i in 1 2 3; do git pull --rebase -q origin main && git push -q origin main && return 0; sleep 5; done; return 1; }
+          failed=0
+          for f in $(ls scripts/queue/*.json | sort | head -n 12); do
+            id=$(basename "$f" .json); ok=0
+            for attempt in 1 2; do
+              export FINAL_ATTEMPT=$([ "$attempt" = 2 ] && echo 1 || echo 0)
+              echo "::group::$id (attempt $attempt)"
+              python pipeline.py "$f" $UP && ok=1
+              echo "::endgroup::"
+              [ "$ok" = 1 ] && break
+              [ "$attempt" = 1 ] && { echo "retrying $id in 5 min"; sleep 300; }
+            done
+            if [ "$ok" = 1 ]; then
+              rm -f "scripts/queue/.fails/$id"
+              git add -A scripts; git add data/pronounce_missing.md data/studio_todo.md 2>/dev/null || true; git diff --staged --quiet || git commit -qm "published $id"
+            else
+              failed=1
+              # a script that fails on 3 separate runs is parked in scripts/failed/ so it stops blocking the queue
+              mkdir -p scripts/queue/.fails; n=$(( $(cat "scripts/queue/.fails/$id" 2>/dev/null || echo 0) + 1 ))
+              echo "$n" > "scripts/queue/.fails/$id"
+              if [ "$n" -ge 3 ]; then
+                mkdir -p scripts/failed; git mv "$f" "scripts/failed/$id.json"; rm -f "scripts/queue/.fails/$id"
+                [ -n "$NTFY_TOPIC" ] && curl -s -d "Parked $id in scripts/failed after 3 failed runs. Move it back to scripts/queue to retry." "ntfy.sh/$NTFY_TOPIC" > /dev/null
+              fi
+              git add -A scripts; git add data/pronounce_missing.md data/studio_todo.md 2>/dev/null || true; git diff --staged --quiet || git commit -qm "render failed $id ($n)"
+              echo "::error::$id failed"
+            fi
+            push || echo "::error::push failed after $id"
+          done
+          exit $failed
+
+      - uses: actions/upload-artifact@v7
+        if: always() && steps.release.outputs.n != '0'
+        with:
+          name: renders
+          path: |
+            output/*/final.mp4
+            output/*/thumbnail.jpg
+          retention-days: 3
+          if-no-files-found: ignore

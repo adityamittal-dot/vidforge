@@ -1,0 +1,126 @@
+{
+  "name": "vidforge",
+  "niche": "TODO: describe the niche",
+  "series": [
+    {
+      "id": "main",
+      "name": "TODO Main Series",
+      "playlist": "TODO Playlist",
+      "hashtags": [
+        "#todo"
+      ],
+      "release": "TODO: release cadence / news hooks for this topic",
+      "sources": [
+        "https://TODO.fandom.com/wiki/Main_Page"
+      ],
+      "search_terms": [
+        "TODO search term"
+      ],
+      "credit": "TODO: rights holders + image source credit"
+    }
+  ],
+  "series_weights": {
+    "main": 1
+  },
+  "long_schedule": [
+    {
+      "from": "2026-10-09",
+      "days": [
+        "Mon",
+        "Tue",
+        "Wed",
+        "Thu",
+        "Fri",
+        "Sat",
+        "Sun"
+      ],
+      "per_day": 2
+    },
+    {
+      "from": "2026-11-01",
+      "days": [
+        "Mon",
+        "Tue",
+        "Wed",
+        "Thu",
+        "Fri",
+        "Sat",
+        "Sun"
+      ],
+      "per_day": 1,
+      "shorts_per_day": 2
+    }
+  ],
+  "shorts_per_day": 1,
+  "narrator_voice": "am_michael",
+  "banned_phrases": [
+    "to understand how we get there",
+    "remember ",
+    "let's dive in",
+    "buckle up",
+    "in this video",
+    "thanks for watching",
+    "don't forget to subscribe",
+    "smash that like",
+    "without further ado",
+    "little did",
+    "but here's the thing",
+    "fast forward"
+  ],
+  "formats": {
+    "short": {
+      "words": [
+        95,
+        165
+      ],
+      "lines": [
+        8,
+        22
+      ],
+      "note": "35-60 s vertical: one sharp claim or story beat, evidence, payoff, last line loops into the first"
+    },
+    "long": {
+      "words": [
+        2450,
+        3000
+      ],
+      "lines": [
+        110,
+        300
+      ],
+      "note": "12-15 min (the pipeline reads ~200 wpm, so 2450-3000 words): What If story or theory breakdown; payoff teased in 5 s, re-hook every 2-3 min"
+    }
+  },
+  "voice_blend": {
+    "am_michael": 0.65,
+    "am_fenrir": 0.35
+  },
+  "speed": {
+    "short": 1.12,
+    "long": 1.18
+  },
+  "publish": {
+    "mode": "schedule",
+    "short_slots_utc": [
+      "14:30",
+      "17:00"
+    ],
+    "long_slots_utc": [
+      "15:00",
+      "23:00"
+    ],
+    "min_lead_hours": 3
+  },
+  "shorts_per_session": {
+    "m": 3,
+    "a": 2,
+    "b": 2
+  },
+  "fair_use_note": "TODO: fair-use / affiliation note for descriptions",
+  "wiki": "TODO.fandom.com",
+  "rotation": {
+    "main": "main",
+    "long_off": [],
+    "short_by_weekday": {}
+  }
+}
