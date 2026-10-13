@@ -95,7 +95,7 @@ def _title_filter(title, n, fade_in, fade_out):
             f"shadowx=3:shadowy=3:shadowcolor=black@0.8:alpha='{a_in}*{a_out}':x=(w-text_w)/2:y=h*0.75")
 
 
-def beat_clip(img, frames, out, k, fx="none", tight=False, fmt="short", card=None, title=None, subs=None):
+def beat_clip(img, frames, out, k, fx="none", tight=False, fmt="short", card=None, title=None, subs=None, dim=0.0):
     """One beat: a still that fills the whole frame (content-aware crop, no blurred bars) and moves:
     push-in, pull-out or a slow drift, rotating by k. fx: zoom = punch-in, shake = decaying camera shake, flash = white flash. Exactly `frames` frames.
     tight: a punch-in recut of the same picture (70% of the crop, upper middle) so a line never holds one frame.
@@ -145,6 +145,8 @@ def beat_clip(img, frames, out, k, fx="none", tight=False, fmt="short", card=Non
         post = ",fade=t=in:st=0:d=0.18:color=white"
     if fmt == "long":
         post += ",vignette=angle=PI/5"
+    if dim:                                               # music tail: darker and darker
+        post += f",eq=brightness=-{dim * 0.5:.3f}:saturation={1 - dim * 0.6:.3f}"
     if card and os.path.exists(FONT):
         post += _card_filter(card, n)
     if title and os.path.exists(FONT):
@@ -322,7 +324,10 @@ def captions_ass(words, path, fmt, hook_text=None, hook_secs=2.6):
     return path
 
 
-def render(clips, segs, narration_wav, out, fmt, ass=None, music=None, sfx_events=(), chapter_marks=(), music_leveled=False):
+def render(clips, segs, narration_wav, out, fmt, ass=None, music=None, sfx_events=(), chapter_marks=(), music_leveled=False,
+           narr_lufs=None):
+    """narr_lufs: the narration's own loudness. Given (sleep videos with a music tail), the mix gets one fixed gain
+    instead of loudnorm, which would otherwise pump the quiet music tail up to speech level."""
     os.makedirs(os.path.dirname(os.path.abspath(out)), exist_ok=True)
     temp_dir = os.path.join(os.path.dirname(os.path.abspath(out)), f"_tmp_{os.path.basename(out)}")
     os.makedirs(temp_dir, exist_ok=True)
@@ -389,12 +394,14 @@ def render(clips, segs, narration_wav, out, fmt, ass=None, music=None, sfx_event
             next_idx += 1
 
     target_i = -14 if fmt == "short" else -16
+    level = (f"volume={target_i - narr_lufs:.2f}dB,alimiter=limit=0.89:level=false" if narr_lufs is not None
+             else f"loudnorm=I={target_i}:TP=-1.5")
     if len(tracks_to_mix) > 1:
         mix_inputs = "".join(tracks_to_mix)
         fc_parts.append(f"{mix_inputs}amix=inputs={len(tracks_to_mix)}:duration=first:normalize=0[amix]")
-        fc_parts.append(f"[amix]loudnorm=I={target_i}:TP=-1.5,aresample=48000,atrim=0:{total_dur:.3f},asetpts=PTS-STARTPTS[aout]")
+        fc_parts.append(f"[amix]{level},aresample=48000,atrim=0:{total_dur:.3f},asetpts=PTS-STARTPTS[aout]")
     else:
-        fc_parts.append(f"{tracks_to_mix[0]}loudnorm=I={target_i}:TP=-1.5,aresample=48000,atrim=0:{total_dur:.3f},asetpts=PTS-STARTPTS[aout]")
+        fc_parts.append(f"{tracks_to_mix[0]}{level},aresample=48000,atrim=0:{total_dur:.3f},asetpts=PTS-STARTPTS[aout]")
 
     video_out = (["-map", "[vout]", "-map", "[aout]", "-c:v", "libx264", "-preset", "medium", "-crf", "19",
                   "-pix_fmt", "yuv420p"] if fmt == "short" else ["-map", "0:v", "-map", "[aout]", "-c:v", "copy"])
@@ -424,6 +431,11 @@ def pad_audio(wav, seconds, out):
         "-af", f"{VOICE_FX},apad=whole_dur={seconds:.3f},aresample=48000",
         "-ac", "2", out
     ])
+
+
+def silence(seconds, out):
+    run(["ffmpeg", "-y", "-f", "lavfi", "-i", "anullsrc=r=48000:cl=stereo", "-t", f"{seconds:.3f}", "-c:a", "pcm_s16le",
+         out])
 
 
 def concat_audio(wavs, out):
@@ -631,6 +643,75 @@ def thumbnail(img, text, highlight, out, img2=None, device=None):
             draw.text((x + 6, y + 8), w, font=font, fill=(0, 0, 0))
             draw.text((x, y), w, font=font, fill=color, stroke_width=9, stroke_fill=(0, 0, 0))
             x += draw.textlength(w + " ", font=font)
+    im.save(out, "JPEG", quality=95)
+
+
+SERIF = os.path.join(FONTS_DIR, "Cinzel.ttf")
+
+
+def _serif(size, weight=b"Black"):
+    f = ImageFont.truetype(SERIF, size)
+    try:
+        f.set_variation_by_name(weight)
+    except Exception:
+        pass
+    return f
+
+
+def thumbnail_sleep(img, title, label, out, layout="bottom"):
+    """1280x720 thumbnail in the style of the sleep-history leaders (History at Night, Silence of the Earth,
+    Boring History Secrets): a full-bleed cinematic painting, softly darkened where the words sit, a 1-4 word
+    topic in a big gold engraved serif and a small white label ("HISTORY FOR SLEEP"). layout: "bottom" (topic
+    along the bottom) or "left" (stacked top-left), so variant B tests a genuinely different composition."""
+    os.makedirs(os.path.dirname(os.path.abspath(out)), exist_ok=True)
+    tw, th = 1280, 720
+    im = _thumb_part(img, tw, th)
+    im = ImageEnhance.Color(im).enhance(1.15)
+    im = ImageEnhance.Contrast(im).enhance(1.08).filter(ImageFilter.UnsharpMask(radius=2, percent=70, threshold=2))
+    grad = Image.new("L", (tw, th), 0)
+    gd = ImageDraw.Draw(grad)
+    if layout == "left":
+        for x in range(0, int(tw * 0.6)):
+            gd.line([(x, 0), (x, th)], fill=int(190 * (1 - x / (tw * 0.6)) ** 1.4))
+    else:
+        for y in range(int(th * 0.45), th):
+            gd.line([(0, y), (tw, y)], fill=int(210 * ((y - th * 0.45) / (th * 0.55)) ** 1.5))
+    im = Image.composite(Image.new("RGB", (tw, th), (8, 6, 4)), im, grad)
+    draw = ImageDraw.Draw(im)
+    gold, white = (242, 193, 78), (245, 240, 230)
+    words = str(title or "").upper().split()[:4]
+    lines = [" ".join(words)] if layout == "bottom" or len(words) < 3 else [" ".join(words[:2]), " ".join(words[2:])]
+    max_w = tw - 120 if layout == "bottom" else int(tw * 0.55)
+    size = 150
+    while size > 50:
+        font = _serif(size)
+        if all(draw.textlength(ln, font=font) <= max_w for ln in lines):
+            break
+        size -= 6
+    lab = str(label or "").upper()
+    lfont = _serif(max(34, int(size / 2.3)), b"Bold")
+
+    def text(x, y, s, f, fill):
+        for dx, dy in ((5, 6), (3, 4)):
+            draw.text((x + dx, y + dy), s, font=f, fill=(0, 0, 0))
+        draw.text((x, y), s, font=f, fill=fill, stroke_width=2, stroke_fill=(40, 25, 5))
+
+    if layout == "left":
+        y = 60
+        if lab:
+            text(60, y, lab, lfont, white)
+            y += int(size / 2.3 * 1.35)
+        for ln in lines:
+            text(60, y, ln, font, gold)
+            y += int(size * 1.08)
+    else:
+        y = th - int(size * 1.15) * len(lines) - 40
+        if lab:
+            lw = draw.textlength(lab, font=lfont)
+            text((tw - lw) / 2, y - int(size / 2.3 * 1.45), lab, lfont, white)
+        for ln in lines:
+            text((tw - draw.textlength(ln, font=font)) / 2, y, ln, font, gold)
+            y += int(size * 1.15)
     im.save(out, "JPEG", quality=95)
 
 

@@ -154,7 +154,7 @@ def bed(mood, work, seconds, narration, fmt, seed=0):
         dur = float(subprocess.check_output(["ffprobe", "-v", "error", "-show_entries", "format=duration",
                                              "-of", "default=nw=1:nk=1", track]).decode().strip())
         if not used:
-            start = _energetic_start(track, need, rng)
+            start = 0.0 if fmt == "long" and need > 3600 else _energetic_start(track, need, rng)
             take = min(dur - start, need)
             t = take
         else:                                     # next track crossfades in over the last 4 s of the previous one
@@ -171,9 +171,10 @@ def bed(mood, work, seconds, narration, fmt, seed=0):
     for i in range(1, len(used)):
         filters.append(f"{chain}[t{i}]acrossfade=d=4:c1=tri:c2=tri[x{i}]")
         chain = f"[x{i}]"
-    fade_out = max(0.0, seconds - 2.0)
+    fade_len = 120.0 if seconds > 3600 else 2.0         # sleep videos: a long, gentle fade at the very end
+    fade_out = max(0.0, seconds - fade_len)
     filters.append(f"{chain}atrim=0:{seconds:.3f},loudnorm=I={target:.1f}:TP=-3:LRA=11,"
-                   f"afade=t=in:d=0.6,afade=t=out:st={fade_out:.2f}:d=2.0,aresample=48000[bed]")
+                   f"afade=t=in:d=0.6,afade=t=out:st={fade_out:.2f}:d={fade_len:.1f},aresample=48000[bed]")
     _ff(["-y", *inputs, "-filter_complex", ";".join(filters), "-map", "[bed]", "-ac", "2", out])
     return out, used
 

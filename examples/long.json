@@ -40,6 +40,24 @@
       "fx": "none"
     },
     {
+      "text": "Before we drift off, tell me where you're listening from tonight, and what time it is for you.",
+      "delivery": "slow",
+      "fx": "none",
+      "shot": {
+        "search": "North Sea sunset",
+        "paint": "a calm grey sea at dusk under a soft violet sky, a faint line of distant low hills on the horizon"
+      }
+    },
+    {
+      "text": "Now dim the lights, take one slow breath, and let the cold sea grow quiet around us.",
+      "delivery": "slow",
+      "fx": "none",
+      "shot": {
+        "search": "North Sea calm",
+        "paint": "an ancient marshland at night, a small campfire glowing beside a reed hut, mist over still water, stars above"
+      }
+    },
+    {
       "text": "Tonight, we drift back about ten thousand years, to a land that now lies under the cold grey water of the North Sea.",
       "delivery": "normal",
       "shot": {
@@ -134,18 +152,18 @@
       "title": "A Country Under the Sea"
     },
     {
-      "line": 4,
+      "line": 6,
       "title": "The Land Before the Water"
     },
     {
-      "line": 9,
+      "line": 11,
       "title": "Life on a Shrinking Land"
     }
   ],
   "thumbnail": {
     "text": "LOST LAND",
-    "highlight": "LOST",
-    "search": "Doggerland map"
+    "search": "Doggerland map",
+    "prompt": "a vast green prehistoric plain between Britain and Europe at golden hour, a small group of hunter gatherers walking beside a winding river, the sea slowly creeping in on the horizon"
   },
   "sources": [
     "https://en.wikipedia.org/wiki/Doggerland",

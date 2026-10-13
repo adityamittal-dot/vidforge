@@ -261,7 +261,7 @@ def main():
 
     # 3. Title check
     title = str(p.get("title", ""))
-    max_title = 60 if fmt == "short" else 70
+    max_title = 60 if fmt == "short" else 90       # sleep titles carry a "| History for Sleep" label (competitors run 70-100)
     if not title:
         err.append("title is missing or empty")
     else:
@@ -343,7 +343,8 @@ def main():
                 if cum_words / 3.0 >= 30.0:
                     cold_open_idx = max(0, i - 1)
                     break
-            if cold_open_idx is not None:
+            # sleep videos open with the welcome ritual (CONTENT_PLAYBOOK.md section 5), not a 30 s cliffhanger
+            if cold_open_idx is not None and channel_cfg.get("style", {}).get("long", {}).get("cold_open_rehook", True):
                 hook_line_idxs.setdefault(cold_open_idx, "the cold open's last line (~30s mark)")
             for idx, where in sorted(hook_line_idxs.items()):
                 if idx >= len(lines) or not isinstance(lines[idx], dict):
@@ -374,11 +375,35 @@ def main():
         if per_min > 1.5:
             warn.append(f"{len(cards)} cards is a lot ({per_min:.1f} a minute); keep them for key names and numbers")
 
-        # Open question or stakes within the first 3 lines: a long video has to earn the next 12 minutes fast.
-        first3 = " ".join(str(ln.get("text", "")) for ln in lines[:3] if isinstance(ln, dict))
+        # Open question or stakes early: a long video has to earn the next hours fast.
+        long_style = channel_cfg.get("style", {}).get("long", {})
+        n_hook = long_style.get("hook_lines", 3)
+        first3 = " ".join(str(ln.get("text", "")) for ln in lines[:n_hook] if isinstance(ln, dict))
         if "?" not in first3:
-            err.append("no '?' in the first 3 lines; open on the core question or stakes "
+            err.append(f"no '?' in the first {n_hook} lines; open on the core question or stakes "
                        "(WRITER.md, cold open) so the viewer knows what's being decided")
+
+        # Sleep-channel rules (channel.json style.long), from the niche's top videos (CONTENT_PLAYBOOK.md)
+        if long_style.get("opening_cta"):
+            opening = " ".join(str(ln.get("text", "")) for ln in lines[:25] if isinstance(ln, dict)).lower()
+            if not re.search(r"where (in the world )?(you'?re|you are) (listening|watching|joining)", opening):
+                err.append("the opening (first 25 lines) must invite viewers to say where they're listening from "
+                           "(and their local time) — the niche's comment engine (WRITER.md, opening ritual)")
+        must = long_style.get("title_must_contain") or []
+        if must and not any(m.lower() in title.lower() for m in must):
+            err.append(f"title must contain one of {must} (the niche's search/browse label, e.g. '| History for Sleep')")
+        if isinstance(p.get("chapters"), list) and len(p["chapters"]) < long_style.get("min_chapters", 3):
+            err.append(f"long sleep videos need at least {long_style['min_chapters']} chapters "
+                       f"(got {len(p['chapters'])}); top videos run one every 3-8 minutes")
+        if long_style.get("thumbnail") == "sleep" and isinstance(p.get("thumbnail"), dict):
+            if not str(p["thumbnail"].get("prompt", "")).strip():
+                err.append("thumbnail needs 'prompt': one cinematic painted scene (WRITER.md, thumbnails)")
+            if not str(p["thumbnail"].get("text", "")).strip():
+                err.append("thumbnail needs 'text': the 1-3 word topic in the gold serif (e.g. 'MAYA COLLAPSE')")
+        paints = sum(1 for ln in lines if isinstance(ln, dict) and (ln.get("shot") or {}).get("paint"))
+        cap = long_style.get("ai_images_max")
+        if cap is not None and paints > cap:
+            warn.append(f"{paints} painted shots; only the first {cap} are painted, the rest use real images")
 
         # The last line is the payoff, never a sign-off.
         if lines and isinstance(lines[-1], dict):

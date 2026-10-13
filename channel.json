@@ -95,8 +95,8 @@
     }
   ],
   "series_weights": {
-    "mysteries": 3,
     "life": 3,
+    "mysteries": 3,
     "empires": 2,
     "myths": 2
   },
@@ -150,14 +150,14 @@
     },
     "long": {
       "words": [
-        18700,
-        22400
+        13000,
+        15600
       ],
       "lines": [
-        1300,
-        2600
+        850,
+        1700
       ],
-      "note": "2.5-3 h sleep documentary (measured ~125 wpm with gentle pauses: 18,700-22,400 words) in 15-25 chapters; one era/mystery told as a calm, accurate story, steady wonder, no shock cliffhangers"
+      "note": "~1h45-2h05 of narration (13,000-15,600 words at ~125 wpm) in 15-25 chapters, then the pipeline adds a music-only 'Sleep Music' tail so every video is ~2h50m. Strongest material in the first 40%."
     }
   },
   "voice_blend": {
@@ -183,12 +183,12 @@
   "rotation": {
     "main": "mysteries",
     "long_cycle": [
-      "mysteries",
       "life",
+      "mysteries",
       "empires",
-      "mysteries",
       "life",
-      "myths"
+      "myths",
+      "mysteries"
     ],
     "short_by_weekday": {}
   },
@@ -209,7 +209,20 @@
       "calm": true,
       "words_per_second": 2.08,
       "music_below_db": 15,
-      "crf": 23
+      "crf": 23,
+      "target_minutes": 170,
+      "min_tail_minutes": 25,
+      "tail_chapter": "Sleep Music",
+      "ai_images_max": 40,
+      "thumbnail": "sleep",
+      "thumbnail_label": "HISTORY FOR SLEEP",
+      "hook_lines": 10,
+      "min_chapters": 15,
+      "title_must_contain": [
+        "for Sleep"
+      ],
+      "opening_cta": true,
+      "cold_open_rehook": false
     }
   },
   "image_style": "richly detailed semi-realistic digital oil painting, historical illustration, warm candlelit palette, soft painterly brushwork, atmospheric depth, no text, no watermark"

@@ -26,6 +26,8 @@ with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "channel.json
     _CHANNEL = json.load(_f)
 CHANNEL_WIKI = _CHANNEL.get("wiki", "")          # default MediaWiki host for scripts without "wiki"
 STYLE = _CHANNEL.get("style", {})                # per-format pacing; a calm long style drops captions, cards, sfx, fx
+for _fmt, _over in json.loads(os.getenv("STYLE_OVERRIDE", "{}")).items():   # tests: STYLE_OVERRIDE='{"long": {...}}'
+    STYLE.setdefault(_fmt, {}).update(_over)
 REPO_URL = "https://github.com/adityamittal-dot/vidforge"
 
 
@@ -181,6 +183,7 @@ def beat_clips(script, fmt, lines, segs, line_starts, line_words_rel, work, seed
         pool.update(visuals.page_images(wiki, page))
     print(f"  image pool: {len(pool)} files from {len(pages)} wiki pages", flush=True)
     used, clips, last_img, k, jobs = visuals.Picks(), [], None, 0, []
+    paint_left = style(fmt, "ai_images_max", 0)        # painted scenes (shot.paint) per video, within the free quota
     chapter_at = {ch["line"]: ch.get("title", "") for ch in script.get("chapters") or [] if ch.get("line")}
     used_log, seen_log, missing = used.order, [], 0
     for i, line in enumerate(lines):
@@ -190,6 +193,14 @@ def beat_clips(script, fmt, lines, segs, line_starts, line_words_rel, work, seed
         paths = [os.path.join(work, "img", f"{i:04d}_{b}.jpg") for b in range(n)]
         imgs = [p for p in paths if os.path.exists(p) and os.path.getsize(p) > 5000]
         fresh = not imgs
+        if not imgs and shot.get("paint") and paint_left > 0:
+            paint_left -= 1
+            try:                                       # an immersive scene painting held for the whole line
+                images.generate(f"{shot['paint']}, {visuals.ANIME_STYLE}", paths[0], seed + i, 1344, 768)
+                imgs = [paths[0]]
+                print(f"  line {i}: painted scene", flush=True)
+            except Exception as e:
+                print(f"  line {i}: painting failed ({e}); using real images", flush=True)
         if not imgs:
             if i == 0 and not shot.get("image") and visuals.pick_hook(shot, line.get("text", ""), wiki, pool, used,
                                                                       paths[0]):
@@ -240,6 +251,28 @@ def beat_clips(script, fmt, lines, segs, line_starts, line_words_rel, work, seed
     if missing > len(lines) / 2:                       # wiki and AI both down: retry on the next run, don't publish
         raise RuntimeError(f"no picture for {missing} of {len(lines)} lines (wiki or image backends unreachable)")
     return clips, pool
+
+
+def tail_clips(work, start, seconds, fmt, k0):
+    """The music tail's pictures: a slow procession of ~75 s holds over pictures the video already showed, dimming
+    step by step so the screen is nearly dark by the end (bright screens wake people)."""
+    imgs = sorted(p for p in glob.glob(os.path.join(work, "img", "*.jpg")) if os.path.getsize(p) > 5000)
+    if not imgs:
+        imgs = [os.path.join(work, "img", "blank.jpg")]
+        video.blank_image(imgs[0], fmt)
+    n = max(1, round(seconds / 75.0))
+    step = max(1, len(imgs) // n)
+    picks = [imgs[(i * step) % len(imgs)] for i in range(n)]
+    f_start, f_end = round(start * video.FPS), round((start + seconds) * video.FPS)
+    out = []
+    for i, img in enumerate(picks):
+        f0 = f_start + (f_end - f_start) * i // n
+        f1 = f_start + (f_end - f_start) * (i + 1) // n
+        clip = os.path.join(work, "clips", f"tail_{i:03d}.mp4")
+        if not os.path.exists(clip):
+            video.beat_clip(img, f1 - f0, clip, k0 + i, fmt=fmt, dim=min(0.6, 0.15 + 0.5 * i / max(1, n - 1)))
+        out.append(clip)
+    return out
 
 
 def run(script_path: str, upload_flag: bool = False, no_move_flag: bool = False) -> str:
@@ -324,7 +357,20 @@ def run(script_path: str, upload_flag: bool = False, no_move_flag: bool = False)
         segs.append(seg)
         t += seg
 
-    total_duration = t
+    narration_end = t
+    # Sleep videos: narration (~1h45-2h05) is followed by a music-only "sleep music" tail up to the channel's target
+    # length, like the niche's top channels (Sleepy History of London: 85 min of narration in a 3 h video, 976k views).
+    # Viewers are asleep by then; the tail keeps the session running at no writing cost.
+    tail = 0.0
+    if style(fmt, "target_minutes", None):
+        tail = max(style(fmt, "min_tail_minutes", 20) * 60.0, style(fmt, "target_minutes") * 60.0 - t)
+        silent = os.path.join(work, "audio", "tail.wav")
+        if not os.path.exists(silent):
+            video.silence(tail, silent)
+        padded_wavs.append(silent)
+        chapter_marks.append((t, style(fmt, "tail_chapter", "Sleep Music")))
+        print(f"  narration {fmt_time(t)}, music tail {fmt_time(tail)}", flush=True)
+    total_duration = t + tail
     try:
         note_unknown_names(script_id, lines)
     except Exception as e:
@@ -340,6 +386,9 @@ def run(script_path: str, upload_flag: bool = False, no_move_flag: bool = False)
     if fmt == "long" and style(fmt, "captions"):      # burned into each beat clip (the joined video is stream-copied)
         long_ass = video.captions_ass(words, os.path.join(work, "captions_long.ass"), fmt)
     clips, pool = beat_clips(script, fmt, lines, segs, line_starts, line_words_rel, work, seed, ass=long_ass)
+    if tail:
+        clips += tail_clips(work, narration_end, tail, fmt, len(clips))
+        segs = segs + [tail]
     last_img = next((p for p in sorted(glob.glob(os.path.join(work, "img", "*.jpg")))), None)
 
     # 4. SFX events
@@ -400,6 +449,7 @@ def run(script_path: str, upload_flag: bool = False, no_move_flag: bool = False)
             sfx_events=sfx_events,
             chapter_marks=chapter_marks,
             music_leveled=music_leveled,
+            narr_lufs=music_lib.loudness(narration_wav) if tail else None,
         )
 
     # 6. Format checks & long assets
@@ -419,6 +469,23 @@ def run(script_path: str, upload_flag: bool = False, no_move_flag: bool = False)
         device = thumb_cfg.get("device")
         thumb_path = os.path.join(work, "thumbnail.jpg")
         thumb_b_path = os.path.join(work, "thumbnail_b.jpg")
+        if style(fmt, "thumbnail", "") == "sleep" and not os.path.exists(thumb_path):
+            # painted scene from thumbnail.prompt; a real picture for thumbnail.search if every image backend fails
+            raw = os.path.join(work, "thumb_paint.jpg")
+            try:
+                if thumb_cfg.get("prompt"):
+                    images.generate(f"{thumb_cfg['prompt']}, {visuals.ANIME_STYLE}, wide cinematic 16:9 composition",
+                                    raw, seed, 1344, 768)
+            except Exception as e:
+                print(f"  thumbnail painting failed ({e}); using a real picture", flush=True)
+            if not os.path.exists(raw):
+                shot = {"search": thumb_cfg.get("search") or script.get("topic", ""), "image": thumb_cfg.get("image")}
+                visuals.pick_hook(shot, script.get("title", ""), wiki, pool, visuals.Picks(), raw, tries=6)
+            if not os.path.exists(raw) and last_img:
+                raw = last_img
+            label = thumb_cfg.get("label") or style(fmt, "thumbnail_label", "HISTORY FOR SLEEP")
+            video.thumbnail_sleep(raw, thumb_cfg.get("text", ""), label, thumb_path, "bottom")
+            video.thumbnail_sleep(raw, thumb_cfg.get("text", ""), label, thumb_b_path, "left")
         if not os.path.exists(thumb_path):
             # the most colourful close-up for the thumbnail's search words (and a second character for a split)
             raws = []
