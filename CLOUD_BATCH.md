@@ -17,7 +17,7 @@ evidence, the 60-title topic bank) and `WRITER.md` (the contract this session wr
 lines, at least 15 chapters — `channel.json`'s `style.long.min_chapters`); the pipeline appends a
 music-only tail automatically so the published video is ~2h50m, but you only write the narration. This
 is still a much bigger write than a Shorts-era script, so cost per script is correspondingly higher.
-**One session should write 2 long scripts (one full day's worth: `<date>-L` and `<date>-L2`)**, not
+**One session should write 2 long scripts (two days' worth: the next two `<date>-L` IDs from `plan.py next 2`)**, not
 more — pushing 2 fully-researched, fact-checked, editor-reviewed scripts per session is a better use of
 budget than rushing 3-4 thin ones. If you're running low on budget partway through, finish and push the
 one script you have rather than leaving two half-written. Check current model pricing before picking
@@ -37,14 +37,14 @@ exact model names.
    ("editor review scored"), `git mv` it back to `scripts/backlog/` and give it straight to the editor
    pass (step 3). That's far cheaper than writing it again. Count it as one of this session's two and
    skip its ID below.
-1. Run `python plan.py next 4` (prints up to 2 days' worth; you only need the first 2 IDs — one day)
+1. Run `python plan.py next 4` (you only need the first 2 IDs)
    and `python -c "import json,glob;print('\n'.join(json.load(open(f))['title'] for f in
    sorted(glob.glob('scripts/*/*.json'))[-60:]))"` (recent titles, to avoid repeating a topic or
    angle).
 2. Pick each video's specific topic yourself up front (civilization/era/mystery + angle, one line
    each), checked against the recent-titles list, against `CONTENT_PLAYBOOK.md`'s ranked formula table
    (section 2) and 60-title topic bank (section 9), and against WRITER.md's competitor benchmarks
-   (section 3) for the assigned series. The two long IDs for a day must differ in series and angle.
+   (section 3) for the assigned series. The two scripts must differ in series and angle.
 3. For each long ID, research and write per WRITER.md:
    - Research with WebSearch (no fixed call cap — a 13,000-15,600 word documentary needs real breadth
      of sourcing; budget roughly 10-20 searches per script, more for `mysteries` topics that need both

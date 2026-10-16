@@ -5,7 +5,7 @@ Automated YouTube pipeline for **Late Night History TV** (`@tvlatenighthistory`)
 dynasties, and myths and legends, told gently and accurately. Every video is **2.5-3 hours long**;
 there are no Shorts on this channel.
 
-The channel publishes **2 long videos every day**, scheduled at **01:00 and 04:00 UTC** (the US
+The channel publishes **1 long video every day**, scheduled at **02:00 UTC** (the US
 bedtime wave — see `channel.json`'s `publish.long_slots_utc`), cycling through four series:
 `mysteries` (Lost Worlds & Ancient Mysteries), `life` (Life in the Past), `empires` (Empires &
 Dynasties), and `myths` (Myths & Legends).
@@ -16,7 +16,7 @@ Dynasties), and `myths` (Myths & Legends).
 
 1. **Scripting**: Claude cloud sessions follow `WRITER.md` (and `CLOUD_BATCH.md` for a batched daily
    session) for research, retention structure, and ad-safety rules, and push validated script JSON
-   files to `scripts/backlog/<id>.json` (IDs are `<date>-L` and `<date>-L2`, one per publish slot)
+   files to `scripts/backlog/<id>.json` (IDs are `<date>-L`; `-L2` if a second daily slot is added)
    alongside research notes in `notes/<id>.md`.
 2. **Just-in-time release**: the `render.yml` workflow (GitHub Actions, on a 2-hourly schedule) merges
    any pending writer branches into `main`, validates every script with `validate_script.py`, and
@@ -80,8 +80,8 @@ Key settings are configured in `channel.json` or through GitHub repository varia
 | Control | Where to Set | Options / Default | Description |
 | :--- | :--- | :--- | :--- |
 | **Publish Mode** | Repo Variable `PUBLISH_MODE` | `schedule` (default), `private`, `public` | Controls visibility of new YouTube uploads. |
-| **Publish Slots** | `channel.json` (`publish`) | `01:00`, `04:00` UTC | Daily upload time slots (US bedtime wave) and minimum lead hours. |
-| **Long Schedule** | `channel.json` (`long_schedule`) | 2 long videos/day, every day | Both of a day's long-video slots; `shorts_per_day` is `0` — this channel has no Shorts. |
+| **Publish Slots** | `channel.json` (`publish`) | `02:00` UTC | Daily upload time slots (US bedtime wave) and minimum lead hours. |
+| **Long Schedule** | `channel.json` (`long_schedule`) | 1 long video/day, every day | Raise `per_day` to 2 (and add a slot) once renders and writer cost are proven; `shorts_per_day` is `0` — this channel has no Shorts. |
 | **Series Rotation** | `channel.json` (`rotation.long_cycle`) | `mysteries, life, empires, mysteries, life, myths` | Which series each successive long video belongs to. |
 | **Voice Blend** | `channel.json` (`voice_blend`) | `{"bm_george": 0.7, "bm_lewis": 0.3}` | Weighted combination of Kokoro voice tensors. |
 | **Voice Override** | Repo Variable `KOKORO_VOICE` | Voice ID (e.g. `bm_george`) | Overrides the voice blend with a single voice. |

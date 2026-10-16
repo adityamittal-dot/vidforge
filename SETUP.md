@@ -92,7 +92,7 @@ In **Settings > Secrets and variables > Actions > Variables**, add `PUBLISH_MODE
 `private` for your first few renders. Every render then uploads privately and nothing goes public
 until you review and publish it yourself in YouTube Studio. Once you're confident the pipeline is
 producing videos you're happy with, delete the variable (or set it to `schedule`) to resume automatic
-scheduled publishing at the slots in `channel.json` (`publish.long_slots_utc`: 01:00 and 04:00 UTC).
+scheduled publishing at the slots in `channel.json` (`publish.long_slots_utc`: 02:00 UTC).
 
 ---
 

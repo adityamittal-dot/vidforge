@@ -25,7 +25,7 @@ not the channel's size.
 3. **Comments are the engagement signal, and the niche farms them politely.** Every top opening asks
    *"tell me where you're listening from and what time it is for you."* Those videos get 700-2,600 comments
    (Mariana Trench 710, Greek Mythology 2,600, Pirate 2,100). Our validator now requires this line in the opening.
-4. **Publish before bedtime.** Videos go out at 01:00 and 04:00 UTC (US East and West evenings), so they are fresh
+4. **Publish before bedtime.** Videos go out at 02:00 UTC (10 pm US East, 7 pm US West; 9 pm EST after Nov 1), so they are fresh
    in the feed when the night-time audience opens YouTube.
 5. **Series give returning viewers.** Midnight History's best videos are a numbered series ("Antarctica Part 3": 66k,
    29x its median). A Part 2 is pre-sold to everyone who watched Part 1.
