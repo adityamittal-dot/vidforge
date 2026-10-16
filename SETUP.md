@@ -11,8 +11,16 @@ a channel handoff where secrets carry over, start from a clean slate here.
 1. In the [Google Cloud Console](https://console.cloud.google.com/), create a new project (or reuse an
    existing one you control) dedicated to this channel's YouTube API access.
 2. Enable the **YouTube Data API v3** for that project.
-3. Configure the OAuth consent screen (External is fine for personal use; you don't need to publish
-   it, just add your own Google account as a test user if it stays in "Testing").
+3. Configure the OAuth consent screen (**Google Auth Platform**), user type **External**:
+   - **Branding**: app name `vidforge`, your support email, no logo (a logo triggers brand
+     verification), home page `https://adityamittal-dot.github.io/vidforge/`, privacy policy
+     `https://adityamittal-dot.github.io/vidforge/privacy.html`, terms
+     `https://adityamittal-dot.github.io/vidforge/terms.html` (these pages live in `docs/`), authorised
+     domain `adityamittal-dot.github.io`, developer contact `latenighthistorytv@gmail.com`. Save.
+   - **Audience**: click **Publish app** so the status is "In production". In "Testing", sign-in only
+     works for listed test users (otherwise "Error 403: access_denied") and the token expires after
+     7 days, which silently stops uploads. If Publish is greyed out, Branding isn't saved completely;
+     adding the channel's Gmail under **Test users** unblocks sign-in in the meantime.
 4. Create an **OAuth 2.0 Client ID** of type **Desktop app**. Download the client secret JSON — this
    is what `auth.py` expects as `yt_client_secret.json`.
 5. Make sure you're signed in to the Google account that manages the `@tvlatenighthistory` YouTube
@@ -28,8 +36,10 @@ On your laptop (not in CI):
 python auth.py
 ```
 
-A browser opens. Sign in with the Google account for `@tvlatenighthistory` and grant access. The
-script prints the full token JSON — copy everything it prints.
+A browser opens. Sign in with the Google account for `@tvlatenighthistory`
+(latenighthistorytv@gmail.com), pick the Late Night History TV channel if asked, click **Advanced → Go to
+vidforge (unsafe)** on the unverified-app warning (it's your own app), tick **Select all** permissions
+and **Continue**. The token is saved to `yt_token.json` (gitignored) and printed.
 
 **Optional reserve credentials** (a second Google Cloud project pointing at the *same* YouTube
 channel, so the pipeline can fall back to it if the primary project's daily quota is exhausted):
@@ -44,7 +54,15 @@ channel, so the pipeline can fall back to it if the primary project's daily quot
 
 ### 3. Set Repository Secrets
 
-In **Settings > Secrets and variables > Actions > Secrets**, add:
+Quickest, straight from the files (nothing to paste):
+
+```bash
+gh secret set YT_CLIENT_SECRET < yt_client_secret.json
+gh secret set YT_TOKEN < yt_token.json
+gh secret list
+```
+
+Or in **Settings > Secrets and variables > Actions > Secrets**, add:
 
 - `YT_CLIENT_SECRET`: the full contents of the client secret JSON from step 1.
 - `YT_TOKEN`: the full token JSON printed by `python auth.py` in step 2.
@@ -132,10 +150,10 @@ Open [YouTube Studio](https://studio.youtube.com/) and set:
 
 ### 10. Test First Render
 
-1. Go to **Actions > render-and-publish > Run workflow**.
-2. Leave the **upload** checkbox unchecked to test-render without publishing anything.
-3. Run the workflow against whatever is in `scripts/queue/`.
-4. A long video can take a large part of the job's time budget (the job has a 330-minute timeout for
+1. Go to **Actions > render-test > Run workflow** and enter a script path (e.g.
+   `scripts/backlog/<id>.json`). It renders without uploading or moving the script, logs the render
+   time, and attaches `final.mp4`, the thumbnail and captions as a 3-day artifact.
+2. A long video can take a large part of the job's time budget (the job has a 330-minute timeout for
    exactly this reason — one 2.5-3 hour sleep video per run). Once finished, download the workflow
    artifact to check the generated thumbnail and metadata.
 
@@ -158,4 +176,5 @@ ever missing, `insights.py` logs a note and skips just that section, and everyth
 
 Drop any licensed MP3s into the mood folder `music/sleep/` (this channel uses only the `sleep` mood —
 see `channel.json`'s `music_mood`). `music.py` already ships a small library of CC BY-licensed calm
-tracks mapped to `sleep`; anything you add joins that pool automatically.
+tracks plus HoliznaCC0's CC0 "Lullabies For The End Of The World" album (`CC0_TRACKS`, no credit
+line needed) mapped to `sleep`; anything you add joins that pool automatically.
