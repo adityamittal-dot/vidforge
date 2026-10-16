@@ -21,7 +21,7 @@ jobs:
       - uses: actions/cache@v6
         with: {path: ~/.cache/huggingface, key: kokoro-v2}
       - uses: actions/cache@v6
-        with: {path: music/library, key: music-library-v1}
+        with: {path: music/library, key: music-library-v2}
       - run: python music.py fetch || echo "::warning::music download failed"
       - name: Render
         env:

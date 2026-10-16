@@ -127,7 +127,7 @@ jobs:
       - name: Cache music library
         if: steps.release.outputs.n != '0'
         uses: actions/cache@v6
-        with: {path: music/library, key: music-library-v1}
+        with: {path: music/library, key: music-library-v2}
 
       - name: Music library
         if: steps.release.outputs.n != '0'

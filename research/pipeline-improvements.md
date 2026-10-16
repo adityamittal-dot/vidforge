@@ -186,3 +186,16 @@ so the net-new findings from outside research are:
 - [YouTube A/B test titles & thumbnails help](https://support.google.com/youtube/answer/16391400?hl=en-GB)
 - [aireiter.com Real-ESRGAN CPU guide](https://aireiter.com/blog/real-esrgan-guide-download-gui)
 - [xinntao/Real-ESRGAN-ncnn-vulkan](https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan)
+
+## Follow-up: Kokoro ONNX benchmark (2026-10-16, measured locally, 8-core CPU)
+
+Same 553-word passage, bm_george 0.7 + bm_lewis 0.3, speed 0.9:
+
+| Runtime | RTF (lower is faster) |
+|---|---|
+| PyTorch `kokoro` (current) | 0.513 |
+| `kokoro-onnx` fp32 | 0.597 |
+| `kokoro-onnx` int8 | 0.455 |
+
+Decision: stay on PyTorch. fp32 ONNX is slower; int8 is only ~11% faster and loses Kokoro's
+word timestamps, its misaki G2P (kokoro-onnx phonemizes with espeak only) and some quality from quantization.

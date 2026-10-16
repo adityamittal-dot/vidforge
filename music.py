@@ -3,6 +3,7 @@
 Tracks are Scott Buckley's Creative Commons library (CC BY 4.0: free for monetized videos when credited).
 His Smart Content ID looks for "Scott Buckley" in the description, so every video that uses a track gets
 `credit()` appended to its description. The MP3s are not in git: CI runs `python music.py fetch` (cached).
+CC0_TRACKS (public domain) join the same pool without a credit line.
 Drop any other licensed MP3 into music/<mood>/ and it joins the pool (no credit line is added for those).
 
 The top Shorts in the niche keep their music 5-8 dB under the voice and audible in every gap; ours sat 13-17 dB
@@ -38,6 +39,17 @@ TRACKS = [
     ("Origami.mp3", "2025/10/", "Origami", ["chill", "sleep"]),
     ("Phoenix2026.mp3", "2026/03/", "Phoenix", ["chill", "sleep"]),
 ]
+# CC0 (public domain, no credit line needed): HoliznaCC0's calm instrumental album on the Free Music Archive.
+# file, full URL, title, moods
+FMA = "https://files.freemusicarchive.org/storage-freemusicarchive-org/tracks/"
+CC0_TRACKS = [
+    ("Holizna_Lullabies1.mp3", FMA + "8RwpuRIdNOdkazzkaujnrvXrcDybVrGYRfdYItKD.mp3", "Lullabies For The End Of The World #1", ["sleep", "chill"]),
+    ("Holizna_Lullabies2.mp3", FMA + "HEbOg2oJyXLOL7DcCJvIICTxz6YqPegW0PyGZ8vp.mp3", "Lullabies For The End Of The World #2", ["sleep", "chill"]),
+    ("Holizna_Lullabies3.mp3", FMA + "l6ZWkm9tTlgersj9RkAJE40646fNo9x3UJrAr4UP.mp3", "Lullabies For The End Of The World #3", ["sleep", "chill"]),
+    ("Holizna_Lullabies4.mp3", FMA + "C5VONRgbqSGJG0zP0pPW1blqAVBaK9C20EQrF3UU.mp3", "Lullabies For The End Of The World #4", ["sleep", "chill"]),
+    ("Holizna_Lullabies5.mp3", FMA + "QQ7qGFBa7XvQ4zoITcak0W3PPq4CIDuJpXDtb8BB.mp3", "Lullabies For The End Of The World #5", ["sleep", "chill"]),
+]
+ALL_TRACKS = TRACKS + CC0_TRACKS
 MOODS = ["hype", "suspense", "emotional", "epic", "chill", "sleep"]
 REPO_DIR = os.path.abspath(os.path.dirname(__file__))
 LIB = os.path.join(REPO_DIR, "music", "library")
@@ -62,11 +74,11 @@ def fetch():
     """Download any missing track into music/library/. Never fails the build: missing tracks fall back."""
     os.makedirs(LIB, exist_ok=True)
     found = None
-    for name, path, _, _ in TRACKS:
+    for name, path, _, _ in ALL_TRACKS:
         dest = os.path.join(LIB, name)
         if os.path.exists(dest) and os.path.getsize(dest) > 100_000:
             continue
-        urls = [BASE + path + name]
+        urls = [path if path.startswith("http") else BASE + path + name]
         for attempt in range(2):
             for u in urls:
                 # curl, not urllib: the site's firewall answers urllib's request with HTTP 406
@@ -86,18 +98,18 @@ def fetch():
             if found is None:                      # the file moved: look it up on the library page
                 found = _library_urls()
             urls = [found[name]] if name in found else []
-    have = [n for n, *_ in TRACKS if os.path.exists(os.path.join(LIB, n))]
-    print(f"music library: {len(have)}/{len(TRACKS)} tracks")
+    have = [n for n, *_ in ALL_TRACKS if os.path.exists(os.path.join(LIB, n))]
+    print(f"music library: {len(have)}/{len(ALL_TRACKS)} tracks")
     return have
 
 
 def candidates(mood):
     """Library tracks tagged with the mood, plus any MP3 dropped into music/<mood>/."""
-    out = [os.path.join(LIB, n) for n, _, _, moods in TRACKS
+    out = [os.path.join(LIB, n) for n, _, _, moods in ALL_TRACKS
            if mood in moods and os.path.exists(os.path.join(LIB, n))]
     out += glob.glob(os.path.join(REPO_DIR, "music", mood, "*.mp3"))
     if not out:   # unknown or empty mood: any track beats a synthesized pad
-        out = [os.path.join(LIB, n) for n, *_ in TRACKS if os.path.exists(os.path.join(LIB, n))]
+        out = [os.path.join(LIB, n) for n, *_ in ALL_TRACKS if os.path.exists(os.path.join(LIB, n))]
         out += glob.glob(os.path.join(REPO_DIR, "music", "*", "*.mp3"))
     return sorted(set(out))
 
