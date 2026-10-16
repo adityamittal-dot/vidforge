@@ -112,7 +112,7 @@
         "Sat",
         "Sun"
       ],
-      "per_day": 2,
+      "per_day": 1,
       "shorts_per_day": 0
     }
   ],
@@ -154,7 +154,7 @@
         15600
       ],
       "lines": [
-        850,
+        650,
         1700
       ],
       "note": "~1h45-2h05 of narration (13,000-15,600 words at ~125 wpm) in 15-25 chapters, then the pipeline adds a music-only 'Sleep Music' tail so every video is ~2h50m. Strongest material in the first 40%."
@@ -172,8 +172,7 @@
     "mode": "schedule",
     "short_slots_utc": [],
     "long_slots_utc": [
-      "01:00",
-      "04:00"
+      "02:00"
     ],
     "min_lead_hours": 3,
     "slots_note": "01:00 UTC = 9 pm EDT / 8 pm EST (East Coast bedtime wave, also late night UK); 04:00 UTC = 9 pm PDT / midnight EDT (West Coast). Times are UTC, so local times shift 1 h when US DST ends (Nov 1)."

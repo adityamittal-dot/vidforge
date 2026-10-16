@@ -23,7 +23,7 @@ Tell me, in the comments, where you are listening from, and what time it is for 
 Now settle in, and find a comfortable position wherever you are resting tonight.
 Dim the lights around you, if you are able to.
 Take one slow breath in, and let it go.
-Let's begin.
+And now, let us begin.
 You wake in the blue dark, long before any birdsong. [paint: a peasant waking in a dim smoky longhouse, embers glowing low, blue pre-dawn light through cracks in a door]
 The air inside the house is thick and faintly sweet with old smoke.
 Somewhere near your feet, an animal shifts its weight and sighs.

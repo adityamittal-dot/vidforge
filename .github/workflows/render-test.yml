@@ -1,0 +1,45 @@
+name: render-test
+# Renders one script without uploading or moving it, and attaches the result as a 3-day artifact.
+# Use it to time a full-length render against the 330 min job limit.
+on:
+  workflow_dispatch:
+    inputs:
+      script: {description: "Script path, e.g. scripts/backlog/2026-10-17-L.json", required: true}
+
+jobs:
+  render:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 340
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with: {python-version: "3.12", cache: pip}
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg espeak-ng
+      - run: |
+          pip install -q torch --index-url https://download.pytorch.org/whl/cpu
+          pip install -q -r requirements.txt
+      - uses: actions/cache@v6
+        with: {path: ~/.cache/huggingface, key: kokoro-v2}
+      - uses: actions/cache@v6
+        with: {path: music/library, key: music-library-v1}
+      - run: python music.py fetch || echo "::warning::music download failed"
+      - name: Render
+        env:
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          POLLINATIONS_TOKEN: ${{ secrets.POLLINATIONS_TOKEN }}
+        run: |
+          start=$(date +%s)
+          python pipeline.py "${{ inputs.script }}" --no-move
+          echo "::notice::render took $(( ($(date +%s) - start) / 60 )) min"
+          ls -la output/*/
+          ffprobe -v error -show_entries format=duration,size -of default=nw=1 output/*/final.mp4
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: render
+          retention-days: 3
+          path: |
+            output/*/final.mp4
+            output/*/thumb*.jpg
+            output/*/*.srt
