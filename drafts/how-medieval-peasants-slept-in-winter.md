@@ -4,6 +4,8 @@
 
 **Description:** Step into rural England and northern Europe between the twelve hundreds and the thirteen hundreds, as the climate was turning colder and winters grew longer. We follow one ordinary household through a single winter night and the year around it, from the smoke-filled hall and the shared warmth of the animals to the quiet hours historians call the first and second sleep. Tell us in the comments where you are listening from tonight, and what time it is where you are. Let the fire burn low, and let this slow winter carry you toward sleep.
 
+**Thumbnail search:** Tres Riches Heures fevrier
+
 **Tags:** history for sleep, medieval history, medieval peasants, medieval winter, little ice age, sleep documentary, bedtime history, relaxing history, medieval life, history documentary, calming history, medieval England, sleep story history, history for sleep documentary, slow history
 
 **Pinned comment:** If you are listening tonight, tell me where in the world you are, and whether it is cold where you are too.
@@ -11,6 +13,7 @@
 **Pages:** Hall house, Cruck, Wattle and daub, Thatching, Couvre-feu, Rushlight, Little Ice Age, Great Famine of 1315–1317, Chilblains, Canonical hours, Plough Monday, Candlemas, Manorialism, Roger Ekirch, Pottage
 
 ## Chapter 1 — Into the Blue Dark
+Search: Tres Riches Heures fevrier | Bruegel winter | Avercamp winter | thatched cottage snow
 
 Welcome back to Late Night History TV, a quiet place for slow stories.
 Tonight we travel to rural England, to a winter seven hundred years gone.
@@ -79,6 +82,7 @@ This waking is neither urgent nor troubling, only a quiet pause folded into the 
 But what, exactly, did people do in the hours between those two sleeps?
 
 ## Chapter 2 — The House of Cruck and Byre
+Search: Cruck house | Weald and Downland Living Museum | wattle and daub | Cruck frame
 
 Picture the house around you as the light outside slowly turns from black to grey. [paint: exterior of a medieval cruck-framed longhouse at dawn, snow on the thatched roof, smoke rising from a ridge vent]
 It is built the way most country houses of this century are built.
@@ -131,6 +135,7 @@ A house left unmended through one careless summer can let in enough cold to thre
 Until the animals are led in and the door is finally barred, and the whole house seems to exhale...
 
 ## Chapter 3 — The Fire at the Center
+Search: Tres Riches Heures fevrier | Hunters in the Snow | Tres Riches Heures fevrier | Luttrell Psalter | Weald and Downland Living Museum
 
 At the heart of the hall, on a flat stone or a patch of packed clay, the fire burns all day. [paint: a glowing open hearth fire in the center of a medieval hall, family silhouettes gathered close, smoke drifting upward]
 There is no chimney here, and in most houses, there never will be.
@@ -180,6 +185,7 @@ So this simple daily task carries more quiet weight than its small size might su
 Until, that is, the moment each evening when the fire itself must be put to bed.
 
 ## Chapter 4 — Covering the Embers
+Search: Vuurstolp | rushlight holder | church bell medieval | Tres Riches Heures fevrier
 
 Each evening, somewhere across the village, a bell begins to ring. [paint: a village church bell tower at dusk over snowy thatched roofs, pale smoke rising from chimneys and roof vents]
 In towns under the old Norman law, this bell has a particular purpose.
@@ -233,6 +239,7 @@ But firelight, rushlight, and the long patient dark together are more than enoug
 Until, under one shared roof, in the last red glow of a buried fire, the household falls still...
 
 ## Chapter 5 — A Colder Turn of Sky
+Search: Avercamp winter | Bruegel winter | Hunters in the Snow | thatched cottage snow
 
 To understand this particular winter, it helps to step back from the fire for a moment. [paint: a frozen river and bare winter trees over a medieval English field, pale grey sky, distant smoke from a village]
 For several centuries before your lifetime, Europe enjoyed what later scholars will call a warm medieval period.
@@ -285,6 +292,7 @@ Their memory of past hardship becomes, in its own way, a kind of early warning f
 But when the wind rises outside tonight, it finds a house that has been quietly readied for it...
 
 ## Chapter 6 — The Bed Beneath the Roof
+Search: bed medieval manuscript | Mother in bed British Library | Luttrell Psalter | Weald and Downland Living Museum
 
 Turn your attention now to the place where your body actually rests each night. [paint: a straw-filled pallet bed with a woven rush mat beneath it and a rough wool blanket, lit by low firelight]
 In a house like yours, a bed is rarely the carved wooden frame you might picture.
@@ -334,6 +342,7 @@ Your own family has never known such a loss, and intends, through careful habit,
 Until the moment comes, as it does every night, to decide exactly what you will sleep in.
 
 ## Chapter 7 — What You Wear to Sleep
+Search: Luttrell Psalter | Tres Riches Heures fevrier | Labours of the Months | Book of hours calendar
 
 Most nights, in warmer seasons, your family sleeps with almost nothing on at all. [paint: a peasant family settling to sleep near a hearth, wrapped in layered wool garments and blankets, warm amber light]
 Linen against bare skin, it turns out, is simply more comfortable than sleeping dressed.
@@ -374,6 +383,7 @@ What matters is waking rested enough to face whatever the next frozen morning as
 But even this sleep, historians now tell us, was never meant to run straight through until morning.
 
 ## Chapter 8 — The Hours Between Sleeps
+Search: bed medieval manuscript | Scipio Lying in Bed Dreaming | Book of hours calendar | Tres Riches Heures fevrier
 
 Hours after you first lay down, something in you quietly surfaces again. [paint: a person half-waking in the dim hearthlight of a medieval home, firelight flickering, others asleep nearby]
 Your eyes open, slowly, in the low red light of the banked fire.
@@ -418,6 +428,7 @@ You simply notice that you are awake, that the house is quiet, and that there is
 Until, little by little, your eyes grow heavy again, and the second half of the night begins to claim you.
 
 ## Chapter 9 — Water, Not Winter Grime
+Search: bathing medieval manuscript | Escena en una casa de baños | Luttrell Psalter | Labours of the Months
 
 A persistent story claims that people of this century never washed themselves at all. [paint: a peasant woman washing her hands and face with a basin and cloth beside a hearth, warm candlelight]
 It is a tidy, memorable story, repeated often enough in later centuries to feel like settled fact.
@@ -452,6 +463,7 @@ The real discomfort of winter lies elsewhere, not in any lack of washing at all.
 But one of the odder myths about this season is not about washing at all, but about how people lay down to sleep...
 
 ## Chapter 10 — Lying Down, Not Sitting Up
+Search: bed medieval manuscript | Mother in bed British Library | bed British Library manuscript | Book of hours calendar
 
 You may have heard it claimed that people of this century slept sitting upright, propped against pillows. [paint: a medieval sleeper lying flat on a straw pallet under wool blankets, calm and resting, soft firelight]
 Some even claim this is why old beds, when you measure them, often look shorter than modern ones.
@@ -488,6 +500,7 @@ It was about small, practical choices, made and remade every single evening, to 
 But one of the most important of those choices happened months earlier, in the chill of a late autumn morning...
 
 ## Chapter 11 — The Salting of November
+Search: Tres Riches Heures novembre | Labours of the Months | December book of hours | Luttrell Psalter
 
 Step back now, in your mind, to the eleventh of November, the feast day called Martinmas. [paint: villagers salting pork and hanging meat to preserve it in a smoky autumn farmyard, cool golden light]
 Across the English countryside, this day marks the traditional close of the farming year.
@@ -525,6 +538,7 @@ And once the salting is finished and the barrels are sealed, the kitchen settles
 But what, exactly, filled the pot over that fire on an ordinary evening in the deep of winter?
 
 ## Chapter 12 — Pottage, Bread, and Ale
+Search: cooking medieval manuscript | Decameron cooking | Brouet médiéval | Luttrell Psalter
 
 The pot hangs over the fire nearly all day long, barely ever fully emptied. [paint: a thick pottage simmering in an iron pot over an open hearth, steam rising, bread and a jug nearby]
 Inside simmers pottage, the steady, thick stew that forms the backbone of almost every meal.
@@ -561,6 +575,7 @@ And soon, the household's attention turns from the practical business of eating 
 Until the shortest days of the year arrive, and a different, gentler season quietly begins...
 
 ## Chapter 13 — Twelve Quiet Days
+Search: feasting 15th century | wassail | Tres Riches Heures janvier | December book of hours
 
 From the twenty-fifth of December until the sixth of January, the whole rhythm of the farm quietly pauses. [paint: a medieval village hall decorated with holly and greenery for Christmas, warm firelight, people gathered together]
 These twelve days mark one of the few true rests in the entire farming calendar.
@@ -594,6 +609,7 @@ By the time they end, the household feels rested enough to face the second half 
 But on the very last of these twelve days, a particular custom quietly signals that the rest is ending.
 
 ## Chapter 14 — The Plough Returns
+Search: Plough Monday | ploughing medieval | Luttrell Psalter | Labours of the Months
 
 The first Monday after the sixth of January carries its own particular name in the village calendar. [paint: villagers pulling a decorated plough through a snowy lane at dawn, torches and breath visible in cold air]
 It is called Plough Monday, and it marks the practical return to the working year.
@@ -625,6 +641,7 @@ There is no rushing a season, only enduring it, one carefully measured day at a 
 But it is not only grain and tools that are counted carefully through these long, cold weeks...
 
 ## Chapter 15 — The Manor's Long Shadow
+Search: manor house medieval | Tres Riches Heures | Luttrell Psalter | Weald and Downland Living Museum
 
 Your family's days, in winter as in summer, answer to more than the weather alone. [paint: a medieval manor house seen across snowy fields from a peasant's cottage, muted winter light]
 The land around your village belongs, in the end, to a lord, who holds it from someone greater still.
@@ -662,6 +679,7 @@ Neither institution asks your opinion, but both, in their own ways, also offer a
 But how, exactly, does a village without any clocks know what hour it actually is?
 
 ## Chapter 16 — Bells Across the Fields
+Search: church bell medieval | Book of hours calendar | Bruegel winter | Avercamp winter
 
 No one in your village owns a clock, and almost no one has ever seen one. [paint: a snow-covered village church tower at dusk with bell ropes visible, soft fading winter light]
 Time, instead, is marked by the rhythm of bells ringing from the parish church tower.
@@ -696,6 +714,7 @@ Soon enough, this same rhythm will carry the whole household toward the fire, an
 Until the bell falls silent, and the village turns inward, toward its oldest form of entertainment...
 
 ## Chapter 17 — Tales Beside the Fire
+Search: Tres Riches Heures fevrier | Decameron | Luttrell Psalter | Weald and Downland Living Museum
 
 With the animals settled and the bowls put away, the evening finally slows into stillness. [paint: a family gathered close around a hearth fire at night, an elder gesturing mid-story, firelight on attentive faces]
 There is no book in this house, and even if there were, few in your family could read it.
@@ -731,6 +750,7 @@ The rest of the household watches the fire a little longer, reluctant to let the
 But even the best story must eventually give way to the hour when the embers are finally banked.
 
 ## Chapter 18 — Snow Games at Dusk
+Search: Avercamp winter | Bruegel winter | Hunters in the Snow | skating Avercamp
 
 Earlier that same day, before the fire was built back up for the evening, the children had their own hour outside. [paint: children playing in snow outside a thatched village cottage at dusk, soft blue twilight, warm windows glowing behind them]
 Snow rarely lies deep in this part of the countryside, but when it does, little work stops for it.
@@ -764,6 +784,7 @@ A childhood built around fire, frost, and animals teaches its own quiet lessons,
 Until, with the light gone fully now, the whole village turns its attention back toward the hearth...
 
 ## Chapter 19 — Candlemas and the Turning Light
+Search: Presentation of Jesus at the Temple | Avercamp winter | Book of hours calendar | Tres Riches Heures fevrier
 
 Weeks pass, and the depth of midwinter slowly, almost imperceptibly, begins to loosen its grip. [paint: a candlelit church service on a cold February morning, snow melting slightly outside tall arched windows]
 The second of February carries its own old name in the church calendar: Candlemas.
@@ -795,6 +816,7 @@ A household that plans ahead through these quiet weeks rarely finds itself truly
 Until the fields themselves confirm what the light has already started to promise...
 
 ## Chapter 20 — The Shepherd's Watch
+Search: shepherds annunciation book of hours | Labours of the Months | Tres Riches Heures | Luttrell Psalter
 
 Inside the byre end of your own house, late winter brings its own particular kind of waking. [paint: a shepherd checking sheep by lantern light in a snowy winter field at night, breath visible in cold air]
 Sheep, kept by many households across the region, begin lambing well before the ground has properly thawed.
@@ -826,6 +848,7 @@ They think of themselves, simply, as living through another winter, the way thei
 Until, soon enough, this same quiet rhythm carries you back toward the night where this story first began...
 
 ## Chapter 21 — The Last Light of Winter
+Search: Bruegel winter | Avercamp winter | thatched cottage snow | Tres Riches Heures fevrier
 
 Return now, gently, to the blue dark hour where this story first found you. [paint: a peasant family asleep peacefully by a dimly glowing hearth, deep blue night outside the small window, snow softly falling]
 You are lying once more on the straw pallet, beneath its weight of wool and shared warmth.

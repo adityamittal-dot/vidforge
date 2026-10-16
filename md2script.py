@@ -3,7 +3,11 @@
 Draft format: a `# Title` line, then `**Thumbnail:** TEXT — prompt`, `**Description:**`, `**Tags:**`,
 `**Pinned comment:**`, optional `**Pages:**` (comma-separated Wikipedia titles) and `**Series:**`,
 then `## Chapter N — Name` sections with one narration line per text line. A trailing
-`[paint: ...]` on a line becomes shot.paint. A `## Sources` section of markdown links ends the script.
+`[paint: ...]` on a line becomes shot.paint. A `Search: q1 | q2 | q3` line right under a chapter heading
+gives that chapter's Wikimedia Commons queries; its lines rotate through them as shot.search, and a
+trailing `[search: ...]` on a line overrides it. Name the subject first ("Avercamp winter", "bed medieval
+manuscript"): the ranker penalises files without the query's first word. A `## Sources` section of
+markdown links ends the script.
 
     python md2script.py drafts/<slug>.md <id> [--series life] [--out scripts/backlog]
 """
@@ -56,13 +60,18 @@ def convert(path, sid, series=None):
         pages = [re.sub(r"%E2%80%93", "–", p) for p in pages]
 
     lines, chapters = [], []
-    chapter_name = title
+    chapter_name, queries, qi = title, [], 0
     for raw in body.splitlines():
         raw = raw.strip()
         m = re.match(r"^## (?:Chapter \d+\s*[—-]\s*)?(.+)$", raw)
         if m:
             chapter_name = m.group(1).strip()
             chapters.append({"line": len(lines), "title": chapter_name})
+            queries, qi = [], 0
+            continue
+        sm = re.match(r"^\*?Search:\s*(.+?)\*?$", raw)
+        if sm:
+            queries = [q.strip() for q in sm.group(1).split("|") if q.strip()]
             continue
         if not raw or raw.startswith(("#", "**", "---")):
             continue
@@ -70,8 +79,18 @@ def convert(path, sid, series=None):
         pm = re.search(r"\s*\[paint:\s*(.+?)\]\s*$", raw)
         if pm:
             paint, raw = pm.group(1).strip(), raw[:pm.start()].strip()
+        search = None
+        qm = re.search(r"\s*\[search:\s*(.+?)\]\s*$", raw)
+        if qm:
+            search, raw = qm.group(1).strip(), raw[:qm.start()].strip()
         for k, text in enumerate(split_long(raw)):
-            shot = {"search": f"{keywords(text)} {keywords(chapter_name, 3)}".strip()}
+            if search:
+                q = search
+            elif queries:
+                q, qi = queries[qi % len(queries)], qi + 1
+            else:
+                q = f"{keywords(text)} {keywords(chapter_name, 3)}".strip()
+            shot = {"search": q}
             if paint and k == 0:
                 shot["paint"] = paint
             lines.append({"text": text, "delivery": "slow", "shot": shot, "fx": "none"})
@@ -83,7 +102,7 @@ def convert(path, sid, series=None):
         "hashtags": ["#historyforsleep"] + [f"#{re.sub(r'[^a-z0-9]', '', t.lower())}" for t in tags[2:4]],
         "tags": tags, "music_mood": "sleep", "comment": field(md, "Pinned comment"),
         "pages": pages, "lines": lines, "chapters": chapters,
-        "thumbnail": {"text": t_text.strip(), "search": keywords(t_prompt, 5), "prompt": t_prompt.strip()},
+        "thumbnail": {"text": t_text.strip(), "search": field(md, "Thumbnail search") or keywords(t_prompt, 5), "prompt": t_prompt.strip()},
         "sources": sources,
         "self_check": {"hook": "welcome ritual + core question", "loop": "chapters end on soft open questions",
                        "facts_verified": True},
