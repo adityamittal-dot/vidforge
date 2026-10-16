@@ -88,6 +88,52 @@ def find_related_long(related_id: str) -> dict | None:
     return None
 
 
+PART_RE = re.compile(r"^(?P<series>.+?)\s+Part\s+(?P<n>\d+)\b", re.IGNORECASE)
+
+
+def series_parts(title: str) -> tuple[str, int] | None:
+    """("Atlantis", 2) for "Atlantis Part 2: The Candidates | History for Sleep", else None."""
+    m = PART_RE.match(title or "")
+    return (m.group("series").strip().lower(), int(m.group("n"))) if m else None
+
+
+def published_parts(series: str) -> dict[int, dict]:
+    """{part number: {"url", "title", "video_id"}} for every published long video in a numbered series."""
+    out = {}
+    for path in glob.glob("scripts/done/*.json"):
+        try:
+            with open(path, encoding="utf-8") as f:
+                data = json.load(f)
+        except Exception:
+            continue
+        sp = series_parts(data.get("title", ""))
+        vid = data.get("published", {}).get("video_id")
+        if sp and sp[0] == series and vid:
+            out[sp[1]] = {"url": f"https://youtu.be/{vid}", "title": data["title"], "video_id": vid}
+    return out
+
+
+def link_previous_part(series: str, n: int, title: str, url: str) -> None:
+    """Append "Next: Part n" to Part n-1's description once Part n is uploaded (videos.update, 51 quota units)."""
+    prev = published_parts(series).get(n - 1)
+    if not prev:
+        return
+    try:
+        yt = upload.channel_client()
+        items = yt.videos().list(part="snippet", id=prev["video_id"]).execute().get("items", []) if yt else []
+        if not items:
+            return
+        snip = items[0]["snippet"]
+        if url in snip.get("description", ""):
+            return
+        snip["description"] = (f"Next: {title}\n{url}\n\n" + snip.get("description", ""))[:4900]
+        yt.videos().update(part="snippet", body={"id": prev["video_id"], "snippet": {
+            k: snip[k] for k in ("title", "description", "tags", "categoryId", "defaultLanguage") if k in snip}}).execute()
+        print(f"  linked Part {n} from Part {n - 1}'s description", flush=True)
+    except Exception as e:
+        append_studio_todo(f"- [ ] add 'Next: {title} {url}' to the top of {prev['title']} ({prev['url']}) ({e})")
+
+
 def append_studio_todo(line: str, data_dir: str = "data") -> None:
     """One manual follow-up line in data/studio_todo.md: things the YouTube Data API can't do itself
     (Test & Compare thumbnails, a Short's "related video" field), so a human checks them off in Studio."""
@@ -528,6 +574,12 @@ def run(script_path: str, upload_flag: bool = False, no_move_flag: bool = False)
     if fmt == "long" and chapter_marks:
         ch_text = "Chapters:\n" + "\n".join(f"{fmt_time(tm)} {title}" for tm, title in chapter_marks)
         desc_blocks.append(ch_text)
+        sp = series_parts(script.get("title", ""))
+        if sp and sp[1] > 1:                               # earlier parts of a numbered series, newest first
+            earlier = published_parts(sp[0])
+            links = [f"Part {k}: {earlier[k]['url']}" for k in sorted(earlier, reverse=True) if k < sp[1]]
+            if links:
+                desc_blocks.insert(1, "Earlier in this series:\n" + "\n".join(links))
     elif fmt == "short" and script.get("related_long"):
         rl_info = find_related_long(script["related_long"])
         if rl_info:
@@ -636,6 +688,10 @@ def run(script_path: str, upload_flag: bool = False, no_move_flag: bool = False)
         }
         with open(script_path, "w", encoding="utf-8") as f:
             json.dump(script, f, indent=2, ensure_ascii=False)
+
+        sp = series_parts(script.get("title", "")) if fmt == "long" else None
+        if sp and sp[1] > 1:
+            link_previous_part(sp[0], sp[1], script.get("title", ""), video_url)
 
         if not no_move_flag:
             os.makedirs("scripts/done", exist_ok=True)
