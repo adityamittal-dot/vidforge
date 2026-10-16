@@ -8,6 +8,8 @@
 
 **Pinned comment:** If you are listening tonight, tell me where in the world you are, and whether it is cold where you are too.
 
+**Pages:** Hall house, Cruck, Wattle and daub, Thatching, Couvre-feu, Rushlight, Little Ice Age, Great Famine of 1315–1317, Chilblains, Canonical hours, Plough Monday, Candlemas, Manorialism, Roger Ekirch, Pottage
+
 ## Chapter 1 — Into the Blue Dark
 
 Welcome back to Late Night History TV, a quiet place for slow stories.
@@ -35,7 +37,7 @@ You can hear it, a long patient hiss moving over dry reed and straw.
 The cold has found every gap in the timber frame and settled into the corners.
 Your family sleeps close around you, three or four bodies under one shared weight of wool.
 Somewhere to your left, your mother turns over, murmuring something you cannot quite catch.
-This is the year thirteen ten, or near enough to it, in the English countryside.
+This is the year thirteen forty, or near enough to it, in the English countryside.
 The land outside is frozen hard, and will not soften again until the spring.
 Winters like this one were not always so sharp in your grandparents' time.
 Something in the sky and the sea has been shifting, slowly, for a generation now.
@@ -595,7 +597,7 @@ But on the very last of these twelve days, a particular custom quietly signals t
 
 The first Monday after the sixth of January carries its own particular name in the village calendar. [paint: villagers pulling a decorated plough through a snowy lane at dawn, torches and breath visible in cold air]
 It is called Plough Monday, and it marks the practical return to the working year.
-In some parishes, a plough is kept through the winter inside the church itself.
+In some parishes, a plough is sometimes kept through the winter inside the church itself.
 A small lamp, called a plough-light, is sometimes kept burning near it through the dark months. [paint: a small oil lamp burning beside an old wooden plough inside a dim stone church]
 On this particular morning, young men of the village sometimes drag a plough from house to house.
 They ask for small coins or food at each door, a cheerful custom meant to mark the season's turn.

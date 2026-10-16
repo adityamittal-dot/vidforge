@@ -32,12 +32,20 @@
   "comment": "If you are listening tonight, tell me where in the world you are, and whether it is cold where you are too.",
   "pages": [
     "Hall house",
-    "Roger Ekirch",
+    "Cruck",
+    "Wattle and daub",
+    "Thatching",
     "Couvre-feu",
+    "Rushlight",
+    "Little Ice Age",
     "Great Famine of 1315–1317",
+    "Chilblains",
     "Canonical hours",
     "Plough Monday",
-    "Chilblains"
+    "Candlemas",
+    "Manorialism",
+    "Roger Ekirch",
+    "Pottage"
   ],
   "lines": [
     {
@@ -242,10 +250,10 @@
       "fx": "none"
     },
     {
-      "text": "This is the year thirteen ten, or near enough to it, in the English countryside.",
+      "text": "This is the year thirteen forty, or near enough to it, in the English countryside.",
       "delivery": "slow",
       "shot": {
-        "search": "year thirteen ten near Into Blue Dark"
+        "search": "year thirteen forty near Into Blue Dark"
       },
       "fx": "none"
     },
@@ -4429,10 +4437,10 @@
       "fx": "none"
     },
     {
-      "text": "In some parishes, a plough is kept through the winter inside the church itself.",
+      "text": "In some parishes, a plough is sometimes kept through the winter inside the church itself.",
       "delivery": "slow",
       "shot": {
-        "search": "some parishes plough kept Plough Returns"
+        "search": "some parishes plough sometimes Plough Returns"
       },
       "fx": "none"
     },
