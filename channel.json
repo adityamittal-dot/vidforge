@@ -172,10 +172,10 @@
     "mode": "schedule",
     "short_slots_utc": [],
     "long_slots_utc": [
-      "02:00"
+      "01:00"
     ],
     "min_lead_hours": 3,
-    "slots_note": "01:00 UTC = 9 pm EDT / 8 pm EST (East Coast bedtime wave, also late night UK); 04:00 UTC = 9 pm PDT / midnight EDT (West Coast). Times are UTC, so local times shift 1 h when US DST ends (Nov 1)."
+    "slots_note": "01:00 UTC is chosen for the highest-RPM audience, the US (~45-55% of English sleep-history views): 9 pm EDT / 8 pm EST and 6 pm PDT / 5 pm PST, so the video is indexed and in feeds 1-2 h before East Coast bedtime and fresh all through Central/West bedtime (02:00-07:00 UTC). Canada follows the same clock. UK/Norway/Switzerland (22:00-23:00 UTC bedtime) and Australia (~11:00-12:00 UTC) pick it up the next night through search and suggested; if a 2nd daily slot is added, use 21:00 UTC for UK/Europe."
   },
   "fair_use_note": "Narrated historical documentary for relaxation and learning. Images are historical artworks, photographs and maps from Wikimedia Commons; each keeps its own licence (see the credits link). Narration voice is AI-generated.",
   "wiki": "en.wikipedia.org",

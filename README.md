@@ -5,7 +5,7 @@ Automated YouTube pipeline for **Late Night History TV** (`@tvlatenighthistory`)
 dynasties, and myths and legends, told gently and accurately. Every video is **2.5-3 hours long**;
 there are no Shorts on this channel.
 
-The channel publishes **1 long video every day**, scheduled at **02:00 UTC** (the US
+The channel publishes **1 long video every day**, scheduled at **01:00 UTC** (the US
 bedtime wave — see `channel.json`'s `publish.long_slots_utc`), cycling through four series:
 `mysteries` (Lost Worlds & Ancient Mysteries), `life` (Life in the Past), `empires` (Empires &
 Dynasties), and `myths` (Myths & Legends).
@@ -14,11 +14,11 @@ Dynasties), and `myths` (Myths & Legends).
 
 ## Current Status (2026-10-16)
 
-- **Schedule**: 1 long video a day at 02:00 UTC (`channel.json`); raise `per_day` once render time and
+- **Schedule**: 1 long video a day at 01:00 UTC (`channel.json`); raise `per_day` once render time and
   writer cost are proven.
 - **YouTube**: OAuth app `vidforge` authorised for @tvlatenighthistory; `YT_CLIENT_SECRET` and
-  `YT_TOKEN` secrets set; long uploads allowed. Repo variables `PUBLISH_MODE=private` (first uploads
-  stay private for review) and `SYNTHETIC_DISCLOSURE=1`.
+  `YT_TOKEN` secrets set; long uploads allowed. Videos publish automatically on schedule
+  (`PUBLISH_MODE` unset); repo variable `SYNTHETIC_DISCLOSURE=1`.
 - **Backlog**: first script `2026-10-17-L` (How Medieval Peasants Slept Through Winter, fact-checked,
   editor scores 8-10) is in `scripts/backlog/`. Further scripts come from daily CLOUD_BATCH sessions.
 - **Open**: full-length render time on Actions is being measured with `render-test.yml`; if a 3 h video

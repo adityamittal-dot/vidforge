@@ -31,7 +31,7 @@ Date is today in IST (`YYYY-MM-DD`). Each session:
 1. Run `python plan.py next 4` (a `CLOUD_BATCH.md` session uses its own count instead). It prints the
    next 4 missing script IDs in schedule order — format, series, and intended publish date — computed
    from `channel.json`'s `long_schedule` (1 long video every day: `<date>-L`, published
-   at 02:00 UTC, the US bedtime wave) and `shorts_per_day` (0 — nothing else to write),
+   at 01:00 UTC, the US bedtime wave) and `shorts_per_day` (0 — nothing else to write),
    skipping anything already sitting in `scripts/backlog/`, `scripts/queue/`, `scripts/done/` or
    `scripts/failed/`.
 2. Write **exactly the scripts it lists** — every one is a full 13,000-15,600 word, 850-1,700 line
@@ -75,7 +75,7 @@ Inspect the repository before selecting topics:
    rules with their evidence (sections 3-5), front-loading (section 6), and the 60-title topic bank
    (section 9). Read it first — it's new research and supersedes any older intuition about this niche.
 1. `channel.json`: note the four series (`mysteries`, `life`, `empires`, `myths`), `long_schedule`
-   (1/day, 02:00 UTC), `voice_blend`, `banned_phrases`, and the `long` format bounds
+   (1/day, 01:00 UTC), `voice_blend`, `banned_phrases`, and the `long` format bounds
    (13,000-15,600 words, 850-1,700 lines, at least 15 chapters — `style.long.min_chapters`).
 2. `data/performance.md` & `data/trends.md` (if present): review top performers by views/day, and the
    Average View Duration/Percentage columns once present (they tell you which videos actually hold
